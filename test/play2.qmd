@@ -1,0 +1,60 @@
+---
+title: "multistart test"
+author: "Haoyu Ji"
+format: 
+  html:
+    self-contained: true
+date: today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+setwd(here::here())
+```
+
+```{r pkgs, message = FALSE, warning=FALSE}
+library(survival)
+library(simsurv)
+library(tidyverse); theme_set(theme_bw())
+```
+
+```{r seed}
+set.seed(427)
+```
+
+```{r}
+set.seed(427)
+
+n <- 30
+lambda <- 0.15  
+t_event <- rexp(n, rate = lambda)  
+t_cens  <- runif(n, min = 1, max = 10) 
+
+time   <- pmin(t_event, t_cens)  
+status <- as.integer(t_event <= t_cens)  
+
+dat <- data.frame(id = 1:n, t_event, t_cens, time, status)
+
+dat_sorted <- dat |>
+  mutate(type = ifelse(status == 1, "event", "censored")) |>
+  arrange(time) |>
+  mutate(order = row_number()) |>
+  select(-t_event, -t_cens) |>
+  relocate(order) 
+
+fit <- survfit(Surv(time, status) ~ 1, data = dat)
+
+sf <- summary(fit)
+km_df <- data.frame(time = sf$time, surv = sf$surv, n.censor = sf$n.censor)
+km_df <- rbind(data.frame(time = 0, surv = 1, n.censor = 0), km_df)  # 起点 S(0)=1
+
+ggplot(km_df, aes(time, surv)) +
+  geom_step(size = 1.1) +                                        # KM 阶梯
+  geom_point(data = subset(km_df, n.censor > 0),                 # 删失标记
+             shape = 3, size = 2, stroke = 0.9) +                # "+" 号
+  scale_y_continuous(limits = c(0, 1), expand = expansion(mult = c(0, .02))) +
+  labs(title = "Kaplan–Meier Curve", x = "Time", y = "Survival Probability") +
+  theme_minimal(base_size = 14)
+
+```
