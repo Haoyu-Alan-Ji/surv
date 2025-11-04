@@ -23,9 +23,7 @@ library(tidyverse); theme_set(theme_bw())
 set.seed(427)
 ```
 
-```{r}
-set.seed(427)
-
+```{r try1, message = FALSE, warning = FALSE}
 n <- 30
 lambda <- 0.15  
 t_event <- rexp(n, rate = lambda)  
@@ -36,7 +34,7 @@ status <- as.integer(t_event <= t_cens)
 
 dat <- data.frame(id = 1:n, t_event, t_cens, time, status)
 
-dat_sorted <- dat |>
+dat <- dat |>
   mutate(type = ifelse(status == 1, "event", "censored")) |>
   arrange(time) |>
   mutate(order = row_number()) |>
