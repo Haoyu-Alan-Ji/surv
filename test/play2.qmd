@@ -30,7 +30,8 @@ t_event <- rexp(n, rate = lambda)
 t_cens  <- runif(n, min = 1, max = 10) 
 
 time   <- pmin(t_event, t_cens)  
-status <- as.integer(t_event <= t_cens)  
+status <- as.integer(t_event <= t_cens) 
+group <- 30 
 
 dat <- data.frame(id = 1:n, t_event, t_cens, time, status)
 
@@ -100,6 +101,14 @@ prop.table(table(dat$status))
 # 分组计数
 table(dat$group, dat$status)
 
+
+lr <- survdiff(Surv(time, status) ~ group, data = dat)
+lr
+# 卡方统计量：
+lr$chisq
+# p 值（自由度 = 组数 - 1）
+pval <- pchisq(lr$chisq, df = length(levels(dat$group)) - 1, lower.tail = FALSE)
+pval
 ```
 
 
@@ -135,6 +144,77 @@ ggplot(km_df, aes(time, surv, colour = strata, group = strata)) +
   scale_color_manual(values = c("group=G0" = "steelblue", "group=G1" = "firebrick"),
                      labels = c("G0","G1"), name = "Group") +
   labs(title = "Kaplan–Meier Curves by Group",
+       x = "Time", y = "Survival Probability") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top")
+
+```
+
+
+```{r}
+set.seed(2025)
+library(survival)
+library(dplyr)
+library(ggplot2)
+
+## ---- 1) 设定多臂参数 ----
+arms   <- c("Control","TxA","TxB")        # 三个治疗臂
+n_arm  <- c(120, 120, 120)                # 各臂样本量
+HR_arm <- c(1.00, 0.80, 0.60)             # 相对对照臂的真实HR（PH假设）
+
+# Weibull 基线（率-形状参数化）
+lambda <- 0.12                             # 基线率
+gamma  <- 1.30                             # 形状 (>1 风险随时升; =1 指数; <1 下降)
+
+# 行政性删失范围
+cens_min <- 2
+cens_max <- 8
+
+## ---- 2) 生成分组与个体层参数 ----
+dat <- data.frame(
+  arm = factor(rep(arms, times = n_arm), levels = arms)
+)
+
+beta  <- log(HR_arm)                       # β=log(HR)
+b_map <- setNames(beta, arms)              # 映射到具体臂
+eta   <- (1 / (lambda * exp(b_map[dat$arm])))^(1/gamma)  # 每人的尺度参数 η_i
+
+## ---- 3) 生成事件时间 + 删失时间 ----
+t_event <- rweibull(nrow(dat), shape = gamma, scale = eta)
+t_cens  <- runif(nrow(dat), cens_min, cens_max)
+
+dat$time   <- pmin(t_event, t_cens)
+dat$status <- as.integer(t_event <= t_cens)     # 1=事件, 0=删失
+
+## ---- 4) 拟合并整理 KM 数据 ----
+fit <- survfit(Surv(time, status) ~ arm, data = dat)
+
+sf <- summary(fit)
+km_df <- data.frame(
+  time     = sf$time,
+  surv     = sf$surv,
+  strata   = sf$strata,     # 形如 "arm=Control"
+  n.risk   = sf$n.risk,
+  n.event  = sf$n.event,
+  n.censor = sf$n.censor
+)
+
+# 给每条曲线补 t=0, S=1 起点
+t0 <- km_df %>% distinct(strata) %>%
+  mutate(time = 0, surv = 1, n.risk = NA, n.event = 0, n.censor = 0)
+km_df <- bind_rows(t0, km_df) %>% arrange(strata, time)
+
+## ---- 5) 画多臂 KM（带删失“+”）----
+ggplot(km_df, aes(time, surv, colour = strata, group = strata)) +
+  geom_step(size = 1.1) +
+  geom_point(data = subset(km_df, n.censor > 0),
+             shape = 3, size = 2, stroke = 0.9) +  # “+”表示删失
+  scale_y_continuous(limits = c(0,1), expand = expansion(mult = c(0,.02))) +
+  scale_color_manual(values = c("arm=Control"="grey30",
+                                "arm=TxA"    ="steelblue",
+                                "arm=TxB"    ="firebrick"),
+                     labels = arms, name = "Arm") +
+  labs(title = "Multi-arm Kaplan–Meier Curves",
        x = "Time", y = "Survival Probability") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "top")
