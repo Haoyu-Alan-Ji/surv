@@ -1,0 +1,59 @@
+---
+title: "plan"
+author: "Haoyu Ji"
+format: 
+  html:
+    self-contained: true
+date: today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+setwd(here::here())
+```
+
+# Inputs & Outputs
+
+KM curve image (high resolution recommended; if curves strongly overlap, split into one image per arm).
+
+Numbers-at-risk table with corresponding time points (strongly recommended; reconstruction is possible without it, but accuracy degrades).
+
+Total sample size and total number of events (helps enforce integer constraints and interval balancing).
+
+## Output
+
+Individual-level table: time, status (1 = event, 0 = censored), group.
+This reproduces KM, HR/CI, and supports Cox/RMST/parametric survival modeling and NMA.
+
+# Digitization
+
+## Algorithm
+
+Read JPG/PNG -> convert to HSL color space
+
+Detect x/y axes and crop to plotting region
+
+Remove background/text (lightness thresholding and optional OCR)
+
+Cluster by color to separate multiple curves (set expected number of curves)
+
+Repair overlaps/missing pixels
+
+Extract curve pixel trajectories
+
+Map pixel coordinates back to real time and survival scales
+
+Output a structured data frame (curve_id, time, survival)
+
+Practical tips
+
+Use high-resolution sources; remove legends/grids/watermarks to reduce noise.
+
+If curves heavily overlap or censoring ticks are dense, split images per arm or use semi-manual assistance.
+
+1.2 Semi-manual / manual path (fallback)
+
+Any digitizer must include the full axes; click densely along curves to their ends.
+
+Produce per-arm  series with a group label; merge into one long table.

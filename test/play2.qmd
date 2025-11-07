@@ -1,5 +1,5 @@
 ---
-title: "multistart test"
+title: "play"
 author: "Haoyu Ji"
 format: 
   html:
@@ -60,34 +60,25 @@ ggplot(km_df, aes(time, surv)) +
 
 
 ```{r}
-set.seed(2025)
+n_total <- 200        
+p_group1 <- 0.5        
+HR       <- 1.5        
+lambda   <- 0.12      
+gamma    <- 1.3     
 
-# ---- 可调参数 ----
-n_total <- 200            # 总样本量
-p_group1 <- 0.5           # 组1比例（其余为组0）
-HR       <- 1.5           # 组1 vs 组0 的风险比
-lambda   <- 0.12          # Weibull 尺度（越大事件越快）
-gamma    <- 1.3           # Weibull 形状(>1 风险随时升；=1 指数；<1 降)
-
-# 行政删失（调节删失强度）
 cens_min <- 2
 cens_max <- 8
 
-# ---- 分组变量 ----
-group <- rbinom(n_total, 1, p_group1)       # 0/1 组
+group <- rbinom(n_total, 1, p_group1)    
 beta  <- log(HR)
 
-# ---- 事件时间（Weibull + PH）----
-# 组别影响通过 rate = lambda * exp(beta*group)，对应 rweibull 的 scale 需要转换
 scale_i <- (1 / (lambda * exp(beta * group)))^(1/gamma)
 t_event <- stats::rweibull(n_total, shape = gamma, scale = scale_i)
 
-# ---- 删失时间（行政性）----
 t_cens  <- runif(n_total, cens_min, cens_max)
 
-# ---- 观测量 ----
 time   <- pmin(t_event, t_cens)
-status <- as.integer(t_event <= t_cens)     # 1=事件, 0=删失
+status <- as.integer(t_event <= t_cens)    
 
 dat <- data.frame(
   id = seq_len(n_total),
@@ -96,50 +87,41 @@ dat <- data.frame(
   status = status
 )
 
-# 简要查看删失比例
 prop.table(table(dat$status))
-# 分组计数
 table(dat$group, dat$status)
 
 
 lr <- survdiff(Surv(time, status) ~ group, data = dat)
 lr
-# 卡方统计量：
+
 lr$chisq
-# p 值（自由度 = 组数 - 1）
+
 pval <- pchisq(lr$chisq, df = length(levels(dat$group)) - 1, lower.tail = FALSE)
 pval
 ```
 
 
 ```{r}
-library(survival)
-library(ggplot2)
-library(dplyr)
-
 fit <- survfit(Surv(time, status) ~ group, data = dat)
 
-# 用 summary 抽“整洁”的分层数据（含 n.censor）
 sf <- summary(fit)
 km_df <- data.frame(
   time     = sf$time,
   surv     = sf$surv,
-  strata   = sf$strata,       # "group=G0"/"group=G1"
+  strata   = sf$strata,  
   n.risk   = sf$n.risk,
   n.event  = sf$n.event,
   n.censor = sf$n.censor
 )
 
-# 每层补 t=0, S=1，保证阶梯从 1 开始
 t0 <- km_df %>% distinct(strata) %>%
   mutate(time = 0, surv = 1, n.risk = NA, n.event = 0, n.censor = 0)
 km_df <- bind_rows(t0, km_df) %>% arrange(strata, time)
 
-# 绘图
 ggplot(km_df, aes(time, surv, colour = strata, group = strata)) +
   geom_step(size = 1.1) +
   geom_point(data = subset(km_df, n.censor > 0),
-             shape = 3, size = 2, stroke = 0.9) +   # “+” 号=删失
+             shape = 3, size = 2, stroke = 0.9) +  
   scale_y_continuous(limits = c(0,1), expand = expansion(mult = c(0,.02))) +
   scale_color_manual(values = c("group=G0" = "steelblue", "group=G1" = "firebrick"),
                      labels = c("G0","G1"), name = "Group") +
@@ -152,63 +134,50 @@ ggplot(km_df, aes(time, surv, colour = strata, group = strata)) +
 
 
 ```{r}
-set.seed(2025)
-library(survival)
-library(dplyr)
-library(ggplot2)
+arms   <- c("Control","TxA","TxB")    
+n_arm  <- c(120, 120, 120) 
+HR_arm <- c(1.00, 0.80, 0.60) 
 
-## ---- 1) 设定多臂参数 ----
-arms   <- c("Control","TxA","TxB")        # 三个治疗臂
-n_arm  <- c(120, 120, 120)                # 各臂样本量
-HR_arm <- c(1.00, 0.80, 0.60)             # 相对对照臂的真实HR（PH假设）
+lambda <- 0.12  
+gamma  <- 1.30   
 
-# Weibull 基线（率-形状参数化）
-lambda <- 0.12                             # 基线率
-gamma  <- 1.30                             # 形状 (>1 风险随时升; =1 指数; <1 下降)
-
-# 行政性删失范围
 cens_min <- 2
 cens_max <- 8
 
-## ---- 2) 生成分组与个体层参数 ----
 dat <- data.frame(
   arm = factor(rep(arms, times = n_arm), levels = arms)
 )
 
-beta  <- log(HR_arm)                       # β=log(HR)
-b_map <- setNames(beta, arms)              # 映射到具体臂
-eta   <- (1 / (lambda * exp(b_map[dat$arm])))^(1/gamma)  # 每人的尺度参数 η_i
+beta  <- log(HR_arm)                
+b_map <- setNames(beta, arms)          
+eta   <- (1 / (lambda * exp(b_map[dat$arm])))^(1/gamma) 
 
-## ---- 3) 生成事件时间 + 删失时间 ----
 t_event <- rweibull(nrow(dat), shape = gamma, scale = eta)
 t_cens  <- runif(nrow(dat), cens_min, cens_max)
 
 dat$time   <- pmin(t_event, t_cens)
-dat$status <- as.integer(t_event <= t_cens)     # 1=事件, 0=删失
+dat$status <- as.integer(t_event <= t_cens)  
 
-## ---- 4) 拟合并整理 KM 数据 ----
 fit <- survfit(Surv(time, status) ~ arm, data = dat)
 
 sf <- summary(fit)
 km_df <- data.frame(
   time     = sf$time,
   surv     = sf$surv,
-  strata   = sf$strata,     # 形如 "arm=Control"
+  strata   = sf$strata, 
   n.risk   = sf$n.risk,
   n.event  = sf$n.event,
   n.censor = sf$n.censor
 )
 
-# 给每条曲线补 t=0, S=1 起点
 t0 <- km_df %>% distinct(strata) %>%
   mutate(time = 0, surv = 1, n.risk = NA, n.event = 0, n.censor = 0)
 km_df <- bind_rows(t0, km_df) %>% arrange(strata, time)
 
-## ---- 5) 画多臂 KM（带删失“+”）----
 ggplot(km_df, aes(time, surv, colour = strata, group = strata)) +
   geom_step(size = 1.1) +
   geom_point(data = subset(km_df, n.censor > 0),
-             shape = 3, size = 2, stroke = 0.9) +  # “+”表示删失
+             shape = 3, size = 2, stroke = 0.9) +  
   scale_y_continuous(limits = c(0,1), expand = expansion(mult = c(0,.02))) +
   scale_color_manual(values = c("arm=Control"="grey30",
                                 "arm=TxA"    ="steelblue",
@@ -218,5 +187,4 @@ ggplot(km_df, aes(time, surv, colour = strata, group = strata)) +
        x = "Time", y = "Survival Probability") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "top")
-
 ```
