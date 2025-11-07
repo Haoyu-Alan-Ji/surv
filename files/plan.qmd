@@ -28,8 +28,6 @@ This reproduces KM, HR/CI, and supports Cox/RMST/parametric survival modeling an
 
 # Digitization
 
-## Algorithm
-
 Read JPG/PNG -> convert to HSL color space
 
 Detect x/y axes and crop to plotting region
@@ -46,14 +44,84 @@ Map pixel coordinates back to real time and survival scales
 
 Output a structured data frame (curve_id, time, survival)
 
-Practical tips
+# Step 2: Preprocessing
 
-Use high-resolution sources; remove legends/grids/watermarks to reduce noise.
+For each arm’s $(t,\hat{S})$:
 
-If curves heavily overlap or censoring ticks are dense, split images per arm or use semi-manual assistance.
+Add origin: if the first point is not $(0,1)$, insert $(0,1)$.
 
-1.2 Semi-manual / manual path (fallback)
+Enforce monotonicity: if $\hat{S}(t_j)>\hat{S}(t_{j-1})$, truncate to $\hat{S}(t_j)\leftarrow\hat{S}(t_{j-1})$.
 
-Any digitizer must include the full axes; click densely along curves to their ends.
+Align intervals: segment by numbers-at-risk time points (if available).
 
-Produce per-arm  series with a group label; merge into one long table.
+Numeric guards: rounding and de-duplication to avoid negative counts, etc.
+
+Rule of thumb: preprocessing + risk table are accuracy multipliers; without them, HR/CI agreement often degrades.
+
+# Collect & align the numbers-at-risk
+
+Prepare the set ${(t_i^{\text{risk}},,n_i^{\text{risk}})}$ and align times to the curve times (decimal harmonization or nearest-neighbor matching).
+
+Check ordering/consistency: start, total $N$, tail at-risk vs. total events balance.
+
+Without the risk table, reconstruction is possible but HR/CI robustness declines; use with caution for high-stakes conclusions.
+
+# Restruction, methodology and formula
+
+Digitized coordinates: ${(t_k,\hat{S}k)}{k=1}^{K}$ (monotone in $\hat{S}$).
+
+Risk table: ${(t_i^{\text{risk}},,n_i^{\text{risk}})}_{i=1}^{T}$.
+
+Segment ${(t_k,\hat{S}k)}$ into intervals $[,t_i^{\text{risk}},,t{i+1}^{\text{risk}})$.
+
+KM update at event time $j$: $S_j = S_{j-1}!\left(1-\dfrac{d_j}{n_j}\right)$
+
+Implied events: $\hat{d}j \approx n_j!\left(1-\dfrac{S_j}{S{j-1}}\right)$, with $0\le \hat{d}_j \le n_j$
+
+$\hat{c}_i \;=\; n_i^{\text{risk}}$
+
+$\sum_{t_k \in [\,t_i^{\text{risk}},\,t_{i+1}^{\text{risk}}\,)} \hat{d}_k$
+
+$n_{i+1}^{\text{risk}} $
+
+$\hat{c}_i \;=\; n_i^{\text{risk}} \cdot \frac{S_{\text{after}}}{S_{\text{before}}}$
+
+$t^{\text{cens}}_{i,m} \sim \text{Uniform}\!\bigl(t_i^{\text{risk}},\,t_{i+1}^{\text{risk}}\bigr)$
+
+$t^{\text{cens}}_{i,m} \text{ evenly spaced in } [t_i^{\text{risk}},\,t_{i+1}^{\text{risk}}).$
+
+# Generate IPD
+
+For each event time $t_k$: assign $\hat{d}_k$ subjects an event at $t_k$.
+
+For each interval: assign $\hat{c}i$ subjects censoring uniformly (or evenly) in $[,t_i^{\text{risk}},,t{i+1}^{\text{risk}})$.
+
+Iterate through intervals; any remaining at risk at the end are censored in a short tail window.
+
+# Quality control (QC) & consistency
+
+Redraw KM from reconstructed IPD and overlay with digitized/adjusted curve (or original figure).
+
+Metrics
+
+On $[0,t_{\max}]$ with 100 equally spaced checkpoints, using right-continuous remapping, compute RMSE/MAE/max error and KS.
+
+Fit Cox with group as the only covariate; compare reconstructed HR/CI with published values; report absolute % HR difference and CI non-overlap.
+
+Empirical baseline
+
+Typical multi-study results: mean absolute HR difference $\approx 2\text{–}3%$, median $\approx 2%$, most $<5%$. If much larger, inspect image quality and risk table first.
+
+# Common failure modes & fixes
+
+Low resolution / heavy overlap / dense censor ticks → use higher-quality images; split per arm; tune denoising or assist semi-manually.
+
+Missing preprocessing (origin/monotonicity) → may cause non-convergence or large HR bias; always preprocess.
+
+Missing risk table → larger HR/CI discrepancies; avoid for high-stakes conclusions.
+
+PH violations (e.g., crossing hazards) → don’t rely on constant HR/log-rank; use RMST or time-varying HR.
+
+
+# Benchmark
+
