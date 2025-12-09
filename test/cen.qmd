@@ -1,0 +1,208 @@
+---
+title: "KMtoIPD test"
+author: "Haoyu Ji"
+format: 
+  html:
+    self-contained: true
+date: today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+setwd(here::here())
+```
+
+```{r pkgs, message = FALSE, warning=FALSE}
+library(IPDfromKM)
+library(survival)
+library(KMtoIPD)
+library(tidyverse); theme_set(theme_bw())
+```
+
+```{r seed}
+set.seed(427)
+```
+
+```{r}
+n     <- 200
+gamma <- 1.2
+lambda <- 0.08
+
+t_event <- rweibull(n, shape = gamma, scale = 1/lambda)
+c_max   <- 15
+t_cens  <- runif(n, 0, c_max)
+
+time   <- pmin(t_event, t_cens)
+status <- as.integer(t_event <= t_cens)
+
+fit_true <- survfit(Surv(time, status) ~ 1)
+```
+
+
+```{r}
+png("km_sim.png", width = 800, height = 600, res = 150)
+plot(
+  fit_true,
+  main      = "Simulated KM (with censoring)",
+  xlab      = "Time",
+  ylab      = "Survival",
+  mark.time = TRUE,
+  mark      = 3  
+)
+dev.off()
+```
+
+
+```{r}
+library(png)
+
+img <- readPNG("km_sim.png") 
+class(img)
+
+windows()
+df_raw <- getpoints(
+  img,
+  x1 = 0,
+  x2 = 15, 
+  y1 = 0,  
+  y2 = 1   
+)
+
+df2   <- df_raw[order(df_raw$x), ]
+t_all <- df2$x
+S_all <- df2$y   
+
+```
+
+
+```{r}
+n_cens <- sum(status == 0) 
+pts <- locator(n = n_cens)
+cens_times_digitized <- pts$x
+
+ipd_kmto <- KMtoIPD::getIPD(
+  n      = n0,
+  t      = t_all,
+  S      = S_all,
+  cens.t = cens_times
+)
+
+head(ipd_kmto)
+```
+
+```{r}
+fit_kmto <- survfit(Surv(t, event) ~ 1, data = ipd_kmto)
+
+plot(
+  fit_true,
+  col       = "black",
+  lwd       = 2,
+  main      = "Original vs KMtoIPD reconstructed",
+  mark.time = TRUE,  
+  mark      = 3, 
+  cex       = 1.1
+)
+
+lines(
+  fit_kmto,
+  col       = "red",
+  lty       = 2,
+  mark.time = TRUE, 
+  mark      = 3,   
+  mark.col  = "red",
+  cex       = 1.1
+)
+
+legend("topright",
+       c("True", "KMtoIPD"),
+       col = c("black", "red"),
+       lwd = 2, lty = c(1, 2))
+
+```
+
+```{r}
+dat <- data.frame(
+  time = t_drop,
+  surv = S_drop * 100  
+)
+```
+
+```{r}
+trisk <- seq(0, 15, by = 3) 
+nrisk <- sapply(trisk, function(t0) sum(time >= t0))
+
+cbind(trisk, nrisk)
+```
+
+```{r}
+pre_ipd <- IPDfromKM::preprocess(
+  dat   = dat,
+  trisk = trisk,
+  nrisk = nrisk,
+  maxy  = 100
+)
+
+est_ipd <- IPDfromKM::getIPD(
+  prep   = pre_ipd,
+  armID  = 1,
+  tot.events = sum(status == 1)  
+)
+
+ipd_ipdfkm <- est_ipd$IPD
+
+head(ipd_ipdfkm)
+```
+
+```{r}
+fit_ipdfkm <- survfit(Surv(time, status) ~ 1, data = ipd_ipdfkm)
+
+plot(
+  fit_true,
+  col       = "black",
+  lwd       = 2,
+  main      = "True vs KMtoIPD vs IPDfromKM",
+  mark.time = TRUE,  
+  mark      = 3,     
+)
+
+lines(
+  fit_kmto,
+  col       = "red",
+  lty       = 2,
+  mark.time = TRUE, 
+  mark      = 3,  
+  mark.col  = "red"
+)
+
+lines(
+  fit_ipdfkm,
+  col       = "blue",
+  lty       = 3,
+  mark.time = TRUE,
+  mark      = 3,
+  mark.col  = "blue"
+)
+
+legend("topright",
+       c("True", "KMtoIPD", "IPDfromKM"),
+       col = c("black","red","blue"),
+       lwd = 2, lty = c(1,2,3))
+```
+
+
+```{r}
+grid_t <- seq(0, max(time), length.out = 200)
+
+S_true   <- summary(fit_true,   times = grid_t)$surv
+S_kmto   <- summary(fit_kmto,   times = grid_t)$surv
+S_ipdfkm <- summary(fit_ipdfkm, times = grid_t)$surv
+
+rmse <- function(x, y) sqrt(mean((x - y)^2, na.rm = TRUE))
+
+rmse_kmto   <- rmse(S_true, S_kmto)
+rmse_ipdfkm <- rmse(S_true, S_ipdfkm)
+
+rmse_kmto
+rmse_ipdfkm
+```

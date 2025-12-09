@@ -1,0 +1,65 @@
+---
+title: "KMtoIPD test"
+author: "Haoyu Ji"
+format: 
+  html:
+    self-contained: true
+date: today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+setwd(here::here())
+```
+
+```{r pkgs, message = FALSE, warning=FALSE}
+library(IPDfromKM)
+library(survival)
+library(KMtoIPD)
+library(png)
+library(tidyverse); theme_set(theme_bw())
+```
+
+```{r seed}
+set.seed(427)
+```
+
+
+```{r}
+data(imgexp) 
+
+windows()
+
+df_raw <- getpoints(imgexp, x1 = 70, x2 = 0, y1 = 0, y2 = 100)
+```
+
+```{r}
+df2 <- df_raw[order(df_raw$x), ]
+
+t_all <- df2$x
+S_all <- df2$y / 100 
+
+```
+
+```{r}
+n_total <- 213  
+
+ipd <- getIPD(
+  n      = n_total,
+  t      = t_all,
+  S      = S_all,
+  cens.t = NA  
+)
+
+head(ipd)
+nrow(ipd)
+table(ipd$event)
+```
+
+```{r}
+fit_recon <- survfit(Surv(t, event) ~ 1, data = ipd)
+
+plot(fit_recon, xlab = "Time", ylab = "Survival",
+     conf.int = FALSE, mark.time = TRUE)
+```

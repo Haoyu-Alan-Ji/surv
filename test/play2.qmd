@@ -44,6 +44,8 @@ dat <- dat |>
 
 fit <- survfit(Surv(time, status) ~ 1, data = dat)
 
+plot(fit, mark.time = TRUE)
+
 sf <- summary(fit)
 km_df <- data.frame(time = sf$time, surv = sf$surv, n.censor = sf$n.censor)
 km_df <- rbind(data.frame(time = 0, surv = 1, n.censor = 0), km_df) 

@@ -1,0 +1,300 @@
+---
+title: "IPDfromKM test"
+author: "Haoyu Ji"
+format: 
+  html:
+    self-contained: true
+date: today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+setwd(here::here())
+```
+
+```{r pkgs, message = FALSE, warning=FALSE}
+library(IPDfromKM)
+library(survival)
+library(simsurv)
+library(SurvdigitizeR)
+library(png)
+library(readxl)
+library(tidyverse); theme_set(theme_bw())
+```
+
+```{r seed}
+set.seed(427)
+```
+
+
+```{r}
+n <- 35         # 样本量
+lambda <- 0.1          # 指数分布 rate
+
+# 事件时间
+time_nocens   <- rexp(n, rate = lambda)
+status_nocens <- rep(1L, n)   # 全部发生事件，没有删失
+
+fit_nocens <- survfit(Surv(time_nocens, status_nocens) ~ 1)
+summary(fit_nocens)$surv[1:5]
+```
+
+```{r}
+# 保持同一个事件时间向量，更好对比
+cens_max <- 10                      # 控制删失强度
+cens_time <- runif(n, 0, cens_max)  # 删失时间
+
+time_cens   <- pmin(time_nocens, cens_time)
+status_cens <- as.integer(time_nocens <= cens_time)  # 1=事件, 0=删失
+
+fit_cens <- survfit(Surv(time_cens, status_cens) ~ 1)
+
+table(status_cens)   # 看删失比例
+
+```
+
+
+```{r no_censoring}
+set.seed(11)
+
+png(here::here('test', "km_nocens.png"), width = 700, height = 700, res = 120)
+
+plot(
+  fit_nocens,
+  xlab = "Time",
+  ylab = "Survival",
+  xlim = c(0, 10),
+  ylim = c(0, 1),
+  mark.time = FALSE,   # 没删失，本来也没 +
+  main = "No censoring"
+)
+
+dev.off()
+
+res_nocens <- survival_digitize(
+  img_path        = here::here('test', "km_nocens.png"),
+  num_curves      = 1,        # 只有一条曲线
+  x_start         = 0,
+  x_end           = 10,
+  x_increment     = 2,
+  y_start         = 0,
+  y_end           = 1,
+  y_increment     = 0.2,
+  y_text_vertical = FALSE,    # y 轴数字是横着写的
+  censoring       = FALSE
+)
+
+head(res_nocens)
+# 通常包含类似: times, St, curve
+
+# 用 SurvdigitizeR 输出
+km_nocens <- res_nocens   # 一条曲线，无需 subset
+
+dat_nocens <- data.frame(
+  time = km_nocens$time,
+  surv = km_nocens$St * 100   # 0–1 → 0–100
+)
+
+# risk table: 我们用“真 IPD”来算，然后假装是已知的
+trisk <- seq(0, 10, by = 2)
+nrisk <- sapply(trisk, function(t0) sum(time_nocens >= t0))
+
+cbind(trisk, nrisk)
+
+pre_nocens <- preprocess(
+  dat   = dat_nocens,
+  trisk = trisk,
+  nrisk = nrisk,
+  maxy  = 100
+)
+
+est_nocens <- getIPD(
+  prep       = pre_nocens,
+  armID      = 1,
+  tot.events = sum(status_nocens == 1)  # 这里其实 = n
+)
+
+ipd_nocens_ipdfkm <- est_nocens$IPD
+head(ipd_nocens_ipdfkm)
+
+fit_true_nocens  <- survfit(Surv(time_nocens, status_nocens) ~ 1)
+fit_ipdfkm_nocens <- survfit(Surv(time, status) ~ 1, data = ipd_nocens_ipdfkm)
+
+plot(fit_true_nocens, col = "black", lwd = 2,
+     main = "True vs IPDfromKM (no censor)")
+lines(fit_ipdfkm_nocens, col = "blue", lty = 2)
+legend("bottomleft", c("True", "IPDfromKM"), col=c("black","blue"),
+       lty = c(1,2), lwd=2)
+
+```
+
+```{r censoring}
+set.seed(11)
+
+png(here::here('test', "km_cens.png"), width = 700, height = 700, res = 120)
+
+plot(
+  fit_cens,
+  xlab = "Time",
+  ylab = "Survival",
+  xlim = c(0, 10),
+  ylim = c(0, 1),
+  mark.time = TRUE, 
+  conf.int = FALSE,
+  mark      = 3, 
+  main      = "With censoring"
+)
+
+dev.off()
+
+res_cens <- survival_digitize(
+  img_path        = here::here('test', "km_cens.png"),
+  num_curves      = 1,
+  x_start         = 0,
+  x_end           = 10,
+  x_increment     = 2,
+  y_start         = 0,
+  y_end           = 1,
+  y_increment     = 0.2,
+  y_text_vertical = FALSE,
+  censoring       = FALSE    # 注意: 这里先只提曲线，不提 "+"
+)
+
+img1 <- readPNG(here::here("test", "km_cens.png"))
+if (length(dim(img1)) == 3L) {
+  img1_gray <- img1[, , 1]      # 取第一层，变成矩阵
+} else {
+  img1_gray <- img1
+}
+class(img1_gray)  # "matrix"
+dim(img1_gray)
+
+n_cens <- sum(status_cens == 0)   # 真实删失个数，只是知道要点几下
+
+windows()
+pts <- getpoints(img1_gray, x1 = 0, x2 = 10, y1 = 0, y2 = 1)
+
+cens_times_digitized <- pts$x
+
+ipd_kmto_cens <- KMtoIPD::getIPD(n = 35, t = res_cens$time, S = res_cens$St, cens.t = cens_times_digitized)
+
+```
+
+
+```{r}
+nrow(ipd_kmto_cens)       # 重建出来有多少人
+table(ipd_kmto_cens$event)  # 0=删失, 1=事件
+length(time_cens)
+table(status_cens)
+```
+
+```{r}
+fit_kmto_cens <- survfit(Surv(t, event) ~ 1, data = ipd_kmto_cens)
+
+plot(
+  fit_cens,
+  col       = "black",
+  lwd       = 2,
+  main      = "True vs KMtoIPD (with censoring times)",
+  xlab      = "Time",
+  ylab      = "Survival",
+  mark.time = TRUE,
+  mark      = 3,
+  mark.col  = "black"
+)
+
+lines(
+  fit_kmto_cens,
+  col       = "red",
+  lty       = 2,
+  mark.time = TRUE,
+  mark      = 3,
+  mark.col  = "red"
+)
+
+legend("bottomleft",
+       c("True", "KMtoIPD (cens)"),
+       col = c("black","red"),
+       lwd = 2, lty = c(1,2))
+
+rmse_surv <- function(fit1, fit2, n_grid = 200) {
+  t_max <- min(max(fit1$time), max(fit2$time))
+  grid  <- seq(0, t_max, length.out = n_grid)
+
+  s1 <- summary(fit1, times = grid)$surv
+  s2 <- summary(fit2, times = grid)$surv
+
+  ok <- !(is.na(s1) | is.na(s2))
+  sqrt(mean((s1[ok] - s2[ok])^2))
+}
+
+rmse_kmto_cens <- rmse_surv(fit_cens, fit_kmto_cens)
+rmse_kmto_cens
+```
+
+
+```{r}
+dat_cens <- data.frame(
+  time = res_cens$time,
+  surv = res_cens$St * 100     # 转成百分比
+)
+
+trisk <- seq(0, 10, by = 2)
+nrisk <- sapply(trisk, function(t0) sum(time_cens >= t0))
+
+risk_table <- tibble(
+  time  = trisk,
+  nrisk = nrisk
+) |>
+    t()
+
+risk_table
+
+# 预处理：强制单调、按风险表分区间
+pre_cens <- preprocess(
+  dat   = dat_cens,
+  trisk = trisk,
+  nrisk = nrisk,
+  maxy  = 100
+)
+
+# 重建 IPD（modified-iKM）
+est_cens <- IPDfromKM::getIPD(
+  prep       = pre_cens,
+  armID      = 1,
+  tot.events = 35   # 可选；有总事件数就填
+)
+
+ipd_ipdfkm_cens <- est_cens$IPD
+head(ipd_ipdfkm_cens)
+
+fit_ipdfkm <- survfit(Surv(time, status) ~ 1, data = ipd_ipdfkm_cens)
+
+plot(fit_cens, col = "black", lwd = 2,
+     main = "True vs IPDfromKM (from digitized KM)",
+     xlab = "Time", ylab = "Survival",
+     mark.time = TRUE, mark = 3)
+lines(fit_ipdfkm, col = "blue", lty = 2)
+legend("bottomleft", c("True", "IPDfromKM"),
+       col = c("black", "blue"), lwd = 2, lty = c(1,2))
+
+rmse_kmfrom_cens <- rmse_surv(fit_cens, fit_ipdfkm)
+rmse_kmfrom_cens
+```
+
+```{r}
+o1 <- read.csv(here::here('data', 't35.csv'))
+
+fit_kmgpt <- survfit(Surv(time, status) ~ 1, data = o1)
+
+plot(fit_true, col = "black", lwd = 2,
+     xlab = "Time", ylab = "Survival",
+     main = "True vs KM-GPT reconstructed")
+lines(fit_kmgpt, col = "red", lty = 2, lwd = 2)
+legend("bottomleft", c("True", "KM-GPT"),
+       col = c("black", "red"), lty = c(1, 2), lwd = 2)
+
+rmse_kmgpt <- rmse_surv(fit_true, fit_kmgpt)
+rmse_kmgpt
+```

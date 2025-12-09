@@ -1,0 +1,142 @@
+---
+title: "IPDfromKM test"
+author: "Haoyu Ji"
+format: 
+  html:
+    self-contained: true
+date: today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+setwd(here::here())
+```
+
+```{r pkgs, message = FALSE, warning=FALSE}
+library(IPDfromKM)
+library(survival)
+library(simsurv)
+library(tidyverse); theme_set(theme_bw())
+```
+
+```{r seed}
+set.seed(427)
+```
+
+```{r}
+data("Radiationdata")
+
+names(Radiationdata)
+```
+
+```{r}
+radio       <- Radiationdata$radio
+trisk       <- Radiationdata$trisk
+nrisk_radio <- Radiationdata$nrisk.radio
+
+pre_radio <- preprocess(
+  dat  = radio, 
+  trisk = trisk,  
+  nrisk = nrisk_radio,
+  totalpts = NULL,  
+  maxy = 100  
+)
+
+est_radio <- getIPD(
+  prep       = pre_radio,
+  armID      = 0,
+  tot.events = NULL  
+)
+
+head(est_radio$IPD)
+```
+
+```{r}
+#ipd_radio <- est_radio$IPD
+#write.csv(ipd_radio, "ipd_radio.csv", row.names = FALSE)
+```
+
+```{r}
+radioplus  <- Radiationdata$radioplus
+nrisk_radioplus  <- Radiationdata$nrisk.radioplus
+
+pre_radioplus <- preprocess(
+  dat  = radioplus,
+  trisk  = trisk,
+  nrisk  = nrisk_radioplus,
+  maxy  = 100
+)
+
+est_radioplus <- getIPD(prep = pre_radioplus, armID = 1, tot.events = NULL)
+
+ipd1 <- est_radio$IPD
+ipd2 <- est_radioplus$IPD
+
+ipd_all <- rbind(ipd1, ipd2) 
+
+head(ipd_all)
+```
+
+```{r}
+fit_km <- survfit(Surv(time, status) ~ 1, data = ipd_all)
+plot(fit_km, col = c("blue", "red"), lty = 1:2)
+legend("topright", legend = c("RT", "RT + cetuximab"),
+       col = c("blue", "red"), lty = 1:2)
+```
+
+```{r}
+plot(est_radio)  
+surv2 <- survreport(
+  ipd1 = est_radio$IPD,
+  ipd2 = est_radioplus$IPD,
+  arms = 2,
+  interval = 8,
+  s = c(0.75, 0.5, 0.25),
+  showplots = TRUE
+)
+print(surv2)
+```
+
+```{r}
+data("imgexp")  
+
+windows()
+df_pts <- getpoints(imgexp, 0, 60, 0, 100)
+```
+
+
+```{r}
+totalpts <- 213 
+
+pre1 <- preprocess(
+  dat  = df_pts,
+  trisk = NULL,
+  nrisk = NULL,
+  totalpts = totalpts,
+  maxy = 100
+)
+
+est1 <- getIPD(pre1, armID = 0, tot.events = NULL)
+head(est1$IPD)
+
+```
+
+```{r}
+windows()
+df_pts2 <- getpoints(imgexp, 0, 60, 0, 100)
+
+pre2 <- preprocess(dat = df_pts2,
+                   trisk = NULL, nrisk = NULL,
+                   totalpts = 213, maxy = 100)
+est2 <- getIPD(pre2, armID = 0, tot.events = NULL)    
+```
+
+```{r}
+fit1 <- survfit(Surv(time, status) ~ 1, data = est1$IPD)
+fit2 <- survfit(Surv(time, status) ~ 1, data = est2$IPD)
+
+plot(fit1, conf.int = FALSE, lty = 2) 
+lines(fit2, lty = 1)  
+points(df_pts$x, df_pts$y/100) 
+```
