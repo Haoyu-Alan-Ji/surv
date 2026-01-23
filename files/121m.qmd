@@ -1,0 +1,59 @@
+---
+title: 0121 meeting
+author: Haoyu Ji
+institute: Department of Biostatistics, University of Minnesota
+csl: ../reflist2.csl
+format:
+  revealjs:
+    theme: 
+      - ../pre_style.scss
+      - serif
+    slide-number: true
+    self-contained: true
+---
+
+# Outline
+- framework
+- details
+- whats next
+
+# framework
+
+::: {.justify}
+## Structure in NMA summary sample
+- Summary part
+- Benchmarking part
+:::
+
+::: {.justify}
+## Summary
+- table1: requirement of input
+- table2: core methodology
+- table3: how to use
+- table4: output difference
+:::
+
+::: {.justify}
+## What's our summary structure?
+Can we copy them?
+
+Problems:
+
+- Bulletpoints in table2 should discuss
+- For table3, it's better to demonstrate the use at the beginning
+- For table4, IPD output are similar, can compare them to support a big table
+:::
+
+::: {.justify}
+## Benchmark design
+- parameters: sample size, censoring density, curve shape, censoring rate
+- compare function: automade extract and analyze
+- try automatically using KM-GPT
+- generating data vs real world data
+- bootstrap from large sample dataset
+- output(tentative): CI, RMSE, mean survival time, difference with real data, define a success rate, time, reproduce...
+:::
+
+::: {.justify}
+## Next 2 weeks work...
+:::

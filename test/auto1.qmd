@@ -40,21 +40,6 @@ fit_nocens <- survfit(Surv(time_nocens, status_nocens) ~ 1)
 summary(fit_nocens)$surv[1:5]
 ```
 
-```{r}
-# 保持同一个事件时间向量，更好对比
-cens_max <- 10                      # 控制删失强度
-cens_time <- runif(n, 0, cens_max)  # 删失时间
-
-time_cens   <- pmin(time_nocens, cens_time)
-status_cens <- as.integer(time_nocens <= cens_time)  # 1=事件, 0=删失
-
-fit_cens <- survfit(Surv(time_cens, status_cens) ~ 1)
-
-table(status_cens)   # 看删失比例
-
-```
-
-
 ```{r no_censoring}
 set.seed(11)
 
@@ -126,6 +111,20 @@ plot(fit_true_nocens, col = "black", lwd = 2,
 lines(fit_ipdfkm_nocens, col = "blue", lty = 2)
 legend("bottomleft", c("True", "IPDfromKM"), col=c("black","blue"),
        lty = c(1,2), lwd=2)
+
+```
+
+```{r}
+# 保持同一个事件时间向量，更好对比
+cens_max <- 10                      # 控制删失强度
+cens_time <- runif(n, 0, cens_max)  # 删失时间
+
+time_cens   <- pmin(time_nocens, cens_time)
+status_cens <- as.integer(time_nocens <= cens_time)  # 1=事件, 0=删失
+
+fit_cens <- survfit(Surv(time_cens, status_cens) ~ 1)
+
+table(status_cens)   # 看删失比例
 
 ```
 
