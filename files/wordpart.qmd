@@ -13,3 +13,14 @@ if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
 setwd(here::here())
 ```
 
+# R packages for IPD reconstruction from published Kaplan–Meier curves
+
+## First paragraph: Intro
+
+The primary focus of the study was on software designed to reconstruct individual patient data (IPD) from published Kaplan–Meier (KM) curves for time-to-event analyses. Although the common workflow for digitising KM curves involves the use of image-extraction tools and reconstruction in Stata, this approach can be cumbersome and less convenient for downstream analyses. Consequently, the focus was directed towards integrated solutions implemented in R.
+
+In this context, three IPD reconstruction tools were selected that signify substantive advances over earlier iKM-based implementations: IPDfromKM, KMtoIPD, and KM-GPT. KMtoIPD emphasizes more explicit handling of truncation times and uses a richer set of reconstruction parameters; IPDfromKM provides an end-to-end workflow via an R/Shiny interface, enabling KM digitization, preprocessing, and IPD reconstruction within a single environment; and KM-GPT leverages AI-assisted extraction to improve the quality of inputs supplied to iKM-style reconstruction. The following sections describe the overall framework of these three tools, with a focus on required inputs, core methodology, and practical workflows from KM curve images to reconstructed IPD. Detailed information on data specifications, modeling assumptions, and implementation details can be found in the corresponding manuals and primary publications for each tool.
+
+## Package Intro
+
+The KMtoIPD package provides a focused set of tools to reconstruct individual patient data (IPD) from published Kaplan–Meier (KM) survival curves by explicitly incorporating censoring times marked on the KM plot, following the method proposed by Rogula et al. (2022). The underlying algorithm was developed to address a common limitation of earlier KM-reconstruction approaches—namely, that exact censoring times are often visually available on published KM curves but are not used—and instead incorporates these censoring times into the reconstructed IPD “exactly as specified” when they can be extracted. In practice, KMtoIPD takes as inputs the total sample size, the digitized coordinates of survival drops, and the digitized censoring times, and returns a patient-level dataset (survival time plus event indicator) suitable for downstream survival modeling. In the original methodological evaluation, Rogula et al. assessed reliability via simulation (simulate → digitize → reconstruct), comparing hazard ratios and survival quantiles between original and reconstructed data and visually inspecting reconstructed curves, and reported no systematic differences and close curve fit. The method is particularly appropriate when censoring marks are clearly distinguishable, because performance depends on the quality of extracted censoring times.
