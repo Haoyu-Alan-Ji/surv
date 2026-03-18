@@ -23,9 +23,9 @@ tab <- tribble(
   "Data ingestion", "Auto data extraction", "✗", "✗", "✓",
   "Data ingestion", "Multiple KM curves in the same figure", "✗", "✗", "✗",
 
-  "Extracts KM measures", "Curve digitization mode", "✗ External software", "✓ Manually", "✓ Automatic",
-  "Extracts KM measures", "Axis calibration required", "✓", "✓ preprocess()", "✓",
-  "Extracts KM measures", "Accepts externally digitized coordinates (time, S(t))", "✓", "✓", "✗",
+  "Extracts KM measures in R", "Curve digitization mode", "✗ External software", "✓ Manually", "✓ Automatic",
+  "Extracts KM measures in R", "Axis calibration required", "✓ (SurvdigitizeR)", "✓ preprocess()", "✓",
+  "Extracts KM measures in R", "Accepts externally digitized coordinates (time, S(t))", "✓", "✓", "✗",
 
   "Reconstruction procession", "Risk table missing", "✗ External software", "✓ Manually", "✓ Automatic",
   "Reconstruction procession", "Data standardization", "✓", "✓ preprocess()", "✓",
@@ -68,14 +68,14 @@ tab2 <- tribble(
   "Interval-level constraints via preprocess()", 
   "Automatic extraction + interval constraints",
   "Risk table", "Supports calibration back to paper-reported quantities (e.g., total events / nrisk checks)", 
-  "△ (implementation-dependent)", "△ (user-supplied totals)", "✓ (pipeline-supported)",
+  "✓ (implementation-dependent)", "✓ (user-supplied totals)", "✓ (pipeline-supported)",
   "Risk table", "Robust to risk-table errors / can re-calibrate to match paper", 
-  "✗", "△ (manual adjustment)", "✓ (automatic/iterative)",
+  "✗", "✓ (manual adjustment)", "✓ (automatic/iterative)",
 
   # -------------------- Censoring --------------------
-  "Censoring", "Allows censoring in reconstructed IPD", "✓", "✓", "△",
+  "Censoring", "Allows censoring in reconstructed IPD", "✓", "✓", "✗",
   "Censoring", "Handles multiple censorings at identical time points (ties)", 
-  "✓", "✓", "△ (not specified)",
+  "✓", "✓", "✗ (not specified)",
   "Censoring", "Handles overlapping/occluded censor marks on the figure (extraction stage)", 
   "✗ (external digitization)", "✗ (manual/interactive)", "✓ (designed for noisy/overlapping marks)",
   "Censoring", "Within-interval censoring time allocation", 
@@ -87,13 +87,13 @@ tab2 <- tribble(
 
   # -------- Reconstruction mechanics & assumptions -----
   "Reconstruction mechanics & assumptions", "Monotonicity correction for noisy/non-monotone digitized curves", 
-  "✓", "△ (depends on preprocess settings)", "✓",
+  "✓", "✓ (depends on preprocess settings)", "✓",
   "Reconstruction mechanics & assumptions", "Event vs censor assignment within a time interval (rule-based)", 
-  "✓", "✓", "△ (not specified)",
+  "✓", "✓", "✗ (not specified)",
   "Reconstruction mechanics & assumptions", "Supports log-scaled time axis", 
   "✗", "✗", "✓",
   "Reconstruction mechanics & assumptions", "Stochastic reconstruction (randomness) + reproducibility controls (seed)", 
-  "△", "△", "✓"
+  "✗", "✗", "✓"
 )
 
 tab2 %>%

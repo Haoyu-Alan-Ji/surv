@@ -1,0 +1,241 @@
+---
+title: "manuscript"
+author: "Haoyu Ji"
+format: 
+  html:
+    code-tools: true
+    df-print: paged
+    self-contained: true
+    code-fold: true
+    code-summary: "Code"
+execute:
+  echo: true
+  warning: false
+  message: false   
+date: today
+---
+
+```{r pkgs}
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+library(tidyverse)
+library(gt)
+library(DiagrammeR)
+library(scales)
+library(glue)
+```
+
+```{r}
+# ---- reusable gt theme ----
+theme_gt <- function(x) {
+  x |>
+    opt_row_striping() |>
+    fmt_missing(columns = everything(), missing_text = "") |>
+    tab_options(
+      table.width = pct(100),
+      data_row.padding = px(4),
+      table.font.size = px(12),
+      heading.align = "left"
+    )
+}
+
+current_date <- Sys.Date()
+
+# ---- controlled vocabularies ----
+record_type_levels <- c(
+  "method_paper",
+  "software_paper",
+  "software_record",
+  "validation_comparison",
+  "preprint_method",
+  "application_only",
+  "background_only"
+)
+
+workflow_stage_levels <- c(
+  "digitization_frontend",
+  "reconstruction_core",
+  "subgroup_recovery",
+  "end_to_end_pipeline",
+  "benchmark_validation",
+  "background_context"
+)
+
+automation_levels <- c(
+  "manual",
+  "semi_automated",
+  "fully_automated"
+)
+
+dedup_levels <- c(
+  "unique",
+  "exact_duplicate",
+  "near_duplicate"
+)
+
+ta_decision_levels <- c(
+  "include",
+  "exclude",
+  "unclear"
+)
+
+ft_decision_levels <- c(
+  "include_main_review",
+  "include_background_only",
+  "exclude",
+  "awaiting"
+)
+
+judgement_levels <- c(
+  "Low concerns",
+  "Some concerns",
+  "High concerns",
+  "Not reported"
+)
+
+
+
+screening_reason_codebook <- tibble::tribble(
+  ~Stage, ~ReasonCode, ~ReasonLabel,
+  "TA", "not_km_ipd", "Not about KM-based IPD reconstruction",
+  "TA", "hr_only_no_ipd", "Extracts HR or other aggregate statistics only; no IPD reconstruction",
+  "TA", "application_only", "Clinical/application paper only; no new method, software, or validation",
+  "TA", "abstract_only", "Conference abstract with insufficient technical detail",
+  "TA", "unrelated_software", "General survival-analysis software unrelated to KM -> IPD reconstruction",
+  "TA", "duplicate", "Duplicate or near-duplicate record",
+
+  "FT", "application_only", "Uses reconstructed IPD but does not develop, implement, or validate a method",
+  "FT", "insufficient_method_detail", "Method/software insufficiently described for appraisal",
+  "FT", "background_only", "Relevant for historical context only, not for main review",
+  "FT", "fulltext_unavailable", "Full text unavailable after reasonable retrieval attempts",
+  "FT", "duplicate_report", "Duplicate / superseded / companion report",
+  "FT", "not_methodological", "Not a methodological, software, or validation record"
+)
+
+metric_codebook <- tibble::tribble(
+  ~MetricCode, ~MetricLabel, ~Direction, ~Unit,
+  "hr_apd", "Absolute percentage difference in hazard ratio", "lower_better", "percent",
+  "ci_nonoverlap", "95% CI non-overlap", "lower_better", "percent",
+  "rmse_surv", "RMSE of survival probabilities", "lower_better", "probability",
+  "mae_surv", "Mean absolute error of survival probabilities", "lower_better", "probability",
+  "maxae_surv", "Maximum absolute error of survival probabilities", "lower_better", "probability",
+  "ks_test", "Kolmogorov-Smirnov statistic / test", "lower_better", "test/statistic",
+  "kendall_tau", "Kendall's tau", "higher_better", "correlation",
+  "success_rate", "Task success rate", "higher_better", "proportion",
+  "runtime", "Runtime", "lower_better", "time",
+  "manual_burden", "Manual preprocessing burden", "lower_better", "ordinal"
+)
+
+failure_mode_codebook <- tibble::tribble(
+  ~FailureCode, ~FailureLabel,
+  "low_resolution", "Low-resolution image",
+  "overlapping_curves", "Overlapping or same-color curves",
+  "missing_risk_table", "Missing numbers-at-risk table",
+  "missing_total_events", "Missing total event count",
+  "unclear_censor_marks", "Unclear or absent censoring marks",
+  "rotated_axes", "Rotated or skewed axes",
+  "ocr_failure", "OCR or text-detection failure",
+  "manual_preprocessing_dependency", "Strong dependency on manual preprocessing",
+  "poor_curve_separation", "Poor separation of multiple treatment arms",
+  "non_reproducible_pipeline", "Preprocessing not fully reproducible"
+)
+```
+
+```{r}
+search_log <- tibble::tribble(
+  ~ID,      ~Source,   ~Date,        ~Status,     ~Query_Type, ~Exact_Query, ~Limits, ~Hits, ~ScreenedTopN, ~Notes,
+
+  "PM-001", "PubMed",  current_date, "executed",  "Concept",
+  '(("Kaplan-Meier"[Title/Abstract] OR "Kaplan Meier"[Title/Abstract] OR "KM curve*"[Title/Abstract] OR "KM plot*"[Title/Abstract] OR "survival curve*"[Title/Abstract]) AND (reconstruct*[Title/Abstract] OR recover*[Title/Abstract] OR digitiz*[Title/Abstract] OR extract*[Title/Abstract]) AND (algorithm[Title/Abstract] OR methodology[Title/Abstract] OR validation[Title/Abstract] OR comparison[Title/Abstract] OR "simulation study"[Title/Abstract] OR performance[Title/Abstract] OR accuracy[Title/Abstract])) NOT ("systematic review"[Title] OR "meta-analysis"[Title] OR treatment[Title] OR efficacy[Title] OR "clinical trial"[Title])',
+  "2012-present", 11, 11,
+  "Primary concept-based search for KM reconstruction methodology",
+
+  "PM-002", "PubMed",  current_date, "executed", "Entity/tool",
+  '("IPDfromKM"[Title/Abstract] OR "ipdfc"[Title/Abstract] OR "SurvdigitizeR"[Title/Abstract] OR "KMSubtraction"[Title/Abstract] OR "reconstructKM"[Title/Abstract] OR "KM-GPT"[Title/Abstract] OR "getIPD"[Title/Abstract])',
+  "2012-present", 6, 6,
+  "Retrieve known methods, software, and named workflows",
+
+  "AX-001", "arXiv", current_date, "executed", "Concept",
+  '"IPD reconstruction" OR "Kaplan-Meier reconstruction"',
+  "2012-present", 6, 6,
+  "Supplementary preprint search for recent method papers",
+
+  "AX-002", "arXiv", current_date, "executed", "Concept",
+  '"KM curve digitize" OR "survival curve digitization"',
+  "2012-present", 31, 6,
+  "Supplementary preprint/automation search; screened only top results",
+
+  "GS-001", "Google Scholar", current_date, "executed", "Concept",
+  '"Kaplan-Meier" "individual patient data" reconstruction',
+  "2012-present", 293, 50,
+  "-meta -review -systematic -clinical -trial -oncology -network -cost -effectiveness",
+
+  "GS-002", "Google Scholar", current_date, "executed", "Concept",
+  '"published Kaplan-Meier curves" "individual patient data"',
+  "2012-present", 2290, 50,
+  "-meta -review -systematic -clinical -trial -oncology -network -cost -effectiveness",
+
+  "GS-003", "Google Scholar", current_date, "executed", "Entity/tool",
+  '"IPDfromKM" OR "SurvdigitizeR" OR "ipdfc" OR "KMSubtraction" OR "KM-GPT" OR "reconstructKM"',
+  "2012-present", 952, 50,
+  "Supplementary exact-name search for known methods and software",
+
+  "CRAN-001", "CRAN", current_date, "executed", "Entity/tool",
+  '"IPDfromKM" OR "reconstructKM"',
+  "Current snapshot", 2, 2,
+  "Software registry search for R packages",
+
+
+)
+
+search_log |>
+  gt() |>
+  tab_header(
+    title = md("**Search Log**"),
+    subtitle = "Concise view for manuscript drafting"
+  ) |>
+  cols_label(
+    ID = "Search ID",
+    Source = "Source",
+    Date = "Date",
+    Status = "Status",
+    Query_Type = "Type",
+    Exact_Query = "Search keywords query",
+    Limits = "Limits",
+    Hits = "Hits",
+    ScreenedTopN = "Top N screened",
+    Notes = "Notes"
+  ) |>
+  fmt_date(
+    columns = Date,
+    date_style = "iso"
+  ) |>
+  fmt_number(
+    columns = c(Hits, ScreenedTopN),
+    decimals = 0
+  ) |>
+  tab_style(
+    style = cell_text(
+      size = px(10),  
+      font = "Courier New" 
+    ),
+    locations = cells_body(columns = Exact_Query)
+  ) |>
+  cols_align(
+    align = "center",
+    columns = c(ID, Date, Status, Query_Type, Hits, ScreenedTopN)
+  ) |>
+  cols_width(
+    ID ~ px(85),
+    Source ~ px(80),
+    Date ~ px(95),
+    Status ~ px(80),
+    Query_Type ~ px(85),
+    Exact_Query ~ px(320),
+    Limits ~ px(110),
+    Hits ~ px(60),
+    ScreenedTopN ~ px(95),
+    Notes ~ px(220)
+  ) |>
+  theme_gt()
+```
+

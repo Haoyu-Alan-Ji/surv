@@ -115,17 +115,27 @@ legend("bottomleft", c("True", "IPDfromKM"), col=c("black","blue"),
 ```
 
 ```{r}
-# 保持同一个事件时间向量，更好对比
-cens_max <- 10                      # 控制删失强度
-cens_time <- runif(n, 0, cens_max)  # 删失时间
+set.seed(11)
+
+cens_max <- 10                
+cens_time <- runif(n, 0, cens_max) 
 
 time_cens   <- pmin(time_nocens, cens_time)
-status_cens <- as.integer(time_nocens <= cens_time)  # 1=事件, 0=删失
+status_cens <- as.integer(time_nocens <= cens_time) 
 
 fit_cens <- survfit(Surv(time_cens, status_cens) ~ 1)
 
-table(status_cens)   # 看删失比例
+table(status_cens)  
 
+etime <- data.frame(
+  time   = time_cens,
+  status = status_cens
+)
+
+etime <- etime[order(etime$time), ]
+row.names(etime) <- NULL
+
+etime
 ```
 
 ```{r censoring}
@@ -157,19 +167,19 @@ res_cens <- survival_digitize(
   y_end           = 1,
   y_increment     = 0.2,
   y_text_vertical = FALSE,
-  censoring       = FALSE    # 注意: 这里先只提曲线，不提 "+"
+  censoring       = FALSE  
 )
 
 img1 <- readPNG(here::here("test", "km_cens.png"))
 if (length(dim(img1)) == 3L) {
-  img1_gray <- img1[, , 1]      # 取第一层，变成矩阵
+  img1_gray <- img1[, , 1]     
 } else {
   img1_gray <- img1
 }
 class(img1_gray)  # "matrix"
 dim(img1_gray)
 
-n_cens <- sum(status_cens == 0)   # 真实删失个数，只是知道要点几下
+n_cens <- sum(status_cens == 0)  
 
 windows()
 pts <- getpoints(img1_gray, x1 = 0, x2 = 10, y1 = 0, y2 = 1)
@@ -182,8 +192,8 @@ ipd_kmto_cens <- KMtoIPD::getIPD(n = 35, t = res_cens$time, S = res_cens$St, cen
 
 
 ```{r}
-nrow(ipd_kmto_cens)       # 重建出来有多少人
-table(ipd_kmto_cens$event)  # 0=删失, 1=事件
+nrow(ipd_kmto_cens)   
+table(ipd_kmto_cens$event) 
 length(time_cens)
 table(status_cens)
 ```
@@ -236,7 +246,7 @@ rmse_kmto_cens
 ```{r}
 dat_cens <- data.frame(
   time = res_cens$time,
-  surv = res_cens$St * 100     # 转成百分比
+  surv = res_cens$St * 100  
 )
 
 trisk <- seq(0, 10, by = 2)
@@ -250,7 +260,6 @@ risk_table <- tibble(
 
 risk_table
 
-# 预处理：强制单调、按风险表分区间
 pre_cens <- preprocess(
   dat   = dat_cens,
   trisk = trisk,
@@ -258,11 +267,10 @@ pre_cens <- preprocess(
   maxy  = 100
 )
 
-# 重建 IPD（modified-iKM）
 est_cens <- IPDfromKM::getIPD(
   prep       = pre_cens,
   armID      = 1,
-  tot.events = 35   # 可选；有总事件数就填
+  tot.events = 9   # event
 )
 
 ipd_ipdfkm_cens <- est_cens$IPD
@@ -273,8 +281,8 @@ fit_ipdfkm <- survfit(Surv(time, status) ~ 1, data = ipd_ipdfkm_cens)
 plot(fit_cens, col = "black", lwd = 2,
      main = "True vs IPDfromKM (from digitized KM)",
      xlab = "Time", ylab = "Survival",
-     mark.time = TRUE, mark = 3)
-lines(fit_ipdfkm, col = "blue", lty = 2)
+     mark.time = TRUE, mark = 3, conf.int = FALSE)
+lines(fit_ipdfkm, mark.time=TRUE, mark=3, col="blue", lty=2, conf.int = FALSE)
 legend("bottomleft", c("True", "IPDfromKM"),
        col = c("black", "blue"), lwd = 2, lty = c(1,2))
 

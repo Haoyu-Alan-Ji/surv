@@ -1,0 +1,211 @@
+---
+title: "part2: meta-epi"
+author: "Haoyu Ji"
+format: 
+  html:
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false   
+date: today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+setwd(here::here())
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(gt)
+library(stringr)
+```
+
+
+```{r}
+search_log <- tibble::tribble(
+  ~Source, ~Platform, ~DateSearched, ~QueryID, ~QueryText, ~TimeWindow, ~Filters, ~HitsReturned, ~ScreenedTopN, ~ExportedToZotero, ~Methodology, ~Application, ~Others,
+  "PubMed", "PubMed", "2026-02-17", "PM-1",
+  'Kaplan-Meier curve reconstruct individual patient data',
+  "2012-01-01 to 2026-02-17", "Custom date range only", 534, 200, 2, 2, 0, 0,
+
+  "PubMed", "PubMed", "2026-02-17", "PM-2",
+  'Kaplan-Meier curve r construct individual patient data',
+  "2012-01-01 to 2026-02-17", "Custom date range only", 98, 98, 0, 0, 0, 0,
+
+  "PubMed", "PubMed", "2026-02-17", "PM-3",
+  'Kaplan-Meier censor reconstruction',
+  "2012-01-01 to 2026-02-17", "Custom date range only", 52, 52, 2, 0, 2, 0,
+
+  "PubMed", "PubMed", "2026-02-17", "PM-4",
+  'IPD reconstruction',
+  "2012-01-01 to 2026-02-17", "Custom date range only", 172, 172, 4, 1, 3, 0,
+
+  "PubMed", "PubMed", "2026-02-17", "PM-5",
+  'software/CRAN/Stata reconstruct IPD',
+  "2012-01-01 to 2026-02-17", "Custom date range only", 0, 0, 0, 0, 0, 0,
+
+  "Google Scholar", "Scholar", "2026-02-17", "GS-1",
+  'Kaplan-Meier reconstruct individual patient data',
+  "2012 to present", "Time filter: since 2012", 16500, 200, 3, 3, 0, 0,
+
+  "Google Scholar", "Scholar", "2026-02-17", "GS-2",
+  'IPD reconstruction',
+  "2012 to present", "Time filter: since 2012", 13700, 200, 1, 0, 1, 0,
+
+  "Google Scholar", "Scholar", "2026-02-17", "GS-3",
+  'KM curve IPD reconstruction R package',
+  "2012 to present", "Time filter: since 2012", 6990, 200, 3, 2, 1, 0, 
+
+  'arXiv', 'arXiv', "2026-02-17", "AX-1",
+  'IPD reconstruction',
+  "2012 to present", "None / date filter if used", 6, 6, 2, 2, 0, 0,
+
+  'arXiv', 'arXiv', "2026-02-17", "AX-2",
+  'KM curve digitize',
+  "2012 to present", "None / date filter if used", 31, 31, 2, 2, 0, 0
+)
+
+gt(search_log) |>
+  fmt_missing(columns = everything(), missing_text = "") |>
+  cols_label(
+    Source = "Source",
+    Platform = "Platform",
+    DateSearched = "Date",
+    QueryID = "Query ID",
+    QueryText = "Query text",
+    TimeWindow = "Time window",
+    Filters = "Filters / limits",
+    HitsReturned = "Hits returned",
+    ScreenedTopN = "Screened (Top N)",
+    ExportedToZotero = "Exported",
+    Methodology = "Methodology",
+    Application = "Application articles with certain methodological improvements",
+    Others = "Summary, poster, conference"
+  ) |>
+  cols_width(
+    Source ~ px(110),
+    Platform ~ px(120),
+    DateSearched ~ px(100),
+    QueryID ~ px(70),
+    QueryText ~ px(520),
+    TimeWindow ~ px(150),
+    Filters ~ px(150),
+    HitsReturned ~ px(95),
+    ScreenedTopN ~ px(110),
+    ExportedToZotero ~ px(90),
+    Methodology ~ px(90),
+    Application ~ px(80),
+    Others ~ px(260)
+  ) |>
+  tab_options(
+    table.font.size = px(12),
+    data_row.padding = px(4)
+  ) |>
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels(everything())
+  ) |>
+  tab_spanner(
+    label = "Counts",
+    columns = c(HitsReturned, ScreenedTopN, ExportedToZotero, Methodology, Application, Others)
+  )
+
+```
+
+We conducted a meta-epidemiological review to systematically identify and summarize the methodological research and tool implementations for reconstructing individual-level time-event data (reconstructed IPD/pseudo-IPD) from published Kaplan–Meier (KM) survival curves since 2012. The search period was limited to January 1, 2012, to the [last search date] (time zone: America/Chicago), and the information sources included PubMed, Google Scholar, and arXiv. PubMed was used for structured bibliographic searches and initial screening; Google Scholar was used to supplement and identify records not fully indexed by PubMed (e.g., software package descriptions, technical reports, conference materials, preprints, etc.) and guide readers to the full text; arXiv served as a supplementary source for preprints. To ensure reproducibility, we established a search log for each source, recording the search date, complete search query, search platform/filtering conditions, number of hits returned, number of screened results, and number of exported/included results. In PubMed (platform: PubMed), we adopted "Option B" (first perform obvious pre-screening on the results interface before exporting candidates) to reduce the burden of bibliographic export and management. We ran three complementary combined search queries: **PM-1 (Core Reconstruction Algorithm)** focuses on the reconstruction concept of KM→IPD/individual-level data, with the search query ("Kaplan-Meier" OR "survival curve" OR "KM curve") AND (reconstruct* OR "individual patient data" OR IPD OR "individual-level data" OR "pseudo IPD" OR "data recovery"); **PM-2 (Risk Table/Censorship Constraints)** strengthens the capture of number-at-risk tables, risk tables, and censorship-related terms, with the search query ("Kaplan-Meier" OR "survival curve") AND ("number at risk" OR "risk table" OR censor* OR "censoring marks") AND (reconstruct* OR IPD OR "individual-level data"); **PM-3 (Software/Implementation Orientation)** is used to capture methodological results presented in software form (e.g., tool papers/descriptions containing CRAN, Shiny, Stata), with the search query ("Kaplan-Meier"). OR "survival curve" AND (software OR package OR Shiny OR CRAN OR Stata) AND (reconstruct* OR IPD OR "individual-level data" OR "pseudo IPD"). Each search query was filtered on the left side of the PubMed results page using Publication dates → Custom range, limiting it to 2012 to [the year of the last search date]. Pre-screening was then performed on the PubMed results page: we first determined whether the title was related to "KM curve digitization/extraction," "KM→IPD (or individual-level data) reconstruction," "risk table/number-at-risk constraint," "censoring markers/censoring time point incorporation reconstruction," "end-to-end automated extraction (OCR/CV/LLM)," or "method comparison/error assessment/practice guidelines." If the title did not clearly indicate relevance, the abstract was opened for further confirmation. Records clearly belonging to purely clinical applications (e.g., simply reporting trial outcomes or efficacy comparisons without involving data reconstruction methods or methodological evaluation) were directly excluded at this stage and not exported. Records pre-screened and retained as candidates are exported as .nbib files via PubMed's "Send to → Citation manager" and imported into Zotero for subsequent unified management. The search log records the total number of hits returned, the number of entries actually viewed/judged (screened in the interface), and the final number of exported candidates for each search query.
+
+Google Scholar is used to supplement the search and navigate the full text. To minimize the impact of personalized ranking, we perform Scholar searches in incognito mode and use time filtering (Since 2012). We predefine a fixed set of search queries and stipulate that each search query only screens the top 100 records in the ranking results. The search queries covered three categories of objectives: core concepts of reconstructed methods (e.g., "Kaplan-Meier" reconstruct "individual patient data"; "survival curve" reconstruct IPD), risk table/censoring constraint concepts (e.g., "Kaplan-Meier" "number at risk" reconstruct; "risk table" Kaplan-Meier reconstruct individual-level), and software and implementation-oriented concepts (e.g., CRAN reconstruct KM Kaplan-Meier; "R package" Kaplan-Meier reconstruct), and automated extraction concepts (e.g., Kaplan-Meier digitization OCR; Kaplan-Meier computer vision extraction pipeline). For each Scholar search query, we recorded the "About N results" displayed by Scholar as an approximation of the hit size and fixed the top 100 for screening. The screening rules were consistent with PubMed pre-screening: those whose titles/excerpts (if necessary, open the abstract or source page) showed methodological contributions or tool implementations were retained as candidates; those that were clearly purely disease-based applications without methodological content were excluded. Since Scholar is not suitable for full export, we only imported candidate records for "entering full-text assessment" into Zotero one by one (via the Zotero Connector browser or BibTeX/EndNote), and recorded in the search log the screened=100, number of exported candidates, number of entries entering full-text assessment, and final number of inclusions for each search query. In addition, we used several "seed documents/tools" (e.g., classic reconstruction algorithm papers and major software tools) as starting points to supplement and trace back in Scholar using "Cited by" and "Related articles"; each seed entry was also limited to the first 100 for screening, and the number of newly added candidates and newly included entries was recorded.
+
+arXiv was used as a supplementary source of preprints, employing 1–2 broad search terms to retrieve preprints related to Kaplan-Meier curve reconstruction (e.g., ("Kaplan-Meier" OR "survival curve") AND (IPD OR "individual patient data" OR reconstruct); and supplementary terms containing digitization/OCR/CV/pipeline terms). Given the limited hit count on arXiv (only 2 relevant records were identified in this study), it was included as a supplementary source in the unified screening process, with the search date, search term, hit count, and export count recorded in the log.
+
+All candidate records were managed centrally in Zotero and entered into the formal screening process. The screening was divided into two stages: title/abstract screening and full-text screening. During the title/abstract screening stage, the inclusion criteria are: clearly proposing, improving, or systematically evaluating a KM→IPD (or individual-level time-to-event data) reconstruction method, or providing a KM curve digitization/automatic extraction method that clearly serves the survival data reuse/reconstruction process; the exclusion criteria are: only reporting clinical outcomes without methodological contributions, only reading median/survival rates from KM but not involving the reconstruction of individual-level data, being unrelated to KM, or having insufficient information to determine methodological content. Records entering the full-text screening must meet the following requirements: at least be able to generate or support the generation of individual-level time and event indicators (or equivalent intermediate results that can be used to construct individual-level data), and provide reproducible algorithmic steps, implementation details, or evaluation design in the method description; the reasons for exclusion in the full-text stage are recorded according to predefined categories (such as "pure application/no methodological contribution", "no output of individual-level data", "non-KM scenario", "full text unavailable/insufficient information", etc.). Throughout the process, we meticulously recorded the hit count, screening count, export count, full-text evaluation count, and final inclusion count for each search query and information source in the QMD search log table (GT table) to support the generation and audit reproducibility of PRISMA process figures. The final included studies were further coded by methodological category during data extraction (reconstruction algorithm, risk table/censoring constraints, digitization/automatic extraction, end-to-end automated pipeline, method comparison/error assessment/practice guide, covariates or unreported subgroup expansion, etc.), and their input requirements, core hypotheses, calibration and validation strategies, output formats, and reproducibility elements were extracted to provide a basis for subsequent methodological synthesis and reference table construction.
+
+```{r}
+screening_log <- tibble::tribble(
+  ~StudyID, ~Source, ~Title, ~FirstAuthor, ~Year, ~TA_Decision, ~ExcludeReason, ~FinalType, ~Notes,
+  
+  "ID-001", "PM-001", "Reconstructing patient level...", "Kim J", 2025, "Include", NA, "Validation", "Core validation study",
+  "ID-002", "PM-001", "Efficacy of ICI in Prostate...", "Zhang F", 2026, "Exclude", "application_only", NA, "Clinical application only",
+  "ID-003", "PM-002", "KM-GPT: Automated Pipeline...", "Zhao Y", 2025, "Include", NA, "Method_Preprint", "LLM-based approach"
+)
+
+screening_log |>
+  select(
+    StudyID, FirstAuthor, Year, Title, 
+    FinalType,          # 保留你定义的 record_type_levels
+    TA_Decision,        # 记录第一轮生死
+    ExcludeReason,      # 统一记录剔除原因，不用分阶段
+    Notes
+  ) |>
+  gt() |>
+  tab_header(
+    title = md("**Screening Log: KM-to-IPD Selection**"),
+    subtitle = "Selection process from initial hits to final methodology inclusion"
+  ) |>
+  cols_label(
+    StudyID = "ID",
+    FirstAuthor = "Author",
+    FinalType = "Record Category",
+    TA_Decision = "Decision",
+    ExcludeReason = "Reason for Exclusion"
+  ) |>
+  # 样式优化：高亮 Decision 这一列
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = TA_Decision)
+  ) |>
+  cols_width(
+    Title ~ px(380),
+    ExcludeReason ~ px(200),
+    Notes ~ px(200)
+  ) |>
+  theme_gt()
+```
+
+```{r}
+extraction_sheet <- tibble::tribble(
+  ~StudyID, ~Method_Name, ~Platform, ~Input_Requirements, ~Workflow_Type, ~Automation, ~Validation_Metric, ~Main_Finding,
+  
+  "Kim-2025", "Iterative", "R", "KM plot + Risk table", "Core Reconstruct", "Semi-auto", "RMSE, HR", "Validated on 46 curves",
+  "Zhao-2025", "KM-GPT", "Python/LLM", "Image only", "End-to-end", "Fully-auto", "Accuracy", "Zero-shot extraction",
+  "Liu-2021", "IPDfromKM", "R/Shiny", "Coordinates + Risk table", "Core Reconstruct", "Manual-heavy", "HR difference", "Standard tool"
+)
+
+extraction_sheet |>
+  select(
+    StudyID, Method_Name, Platform, 
+    Workflow_Type,      # 使用 workflow_stage_levels
+    Automation,         # 使用 automation_levels
+    Input_Requirements, # 包含 Risk Table, Censor Marks 等信息的综合描述
+    Validation_Metric,  # 包含 RMSE, HR 等
+    Main_Finding
+  ) |>
+  gt() |>
+  tab_header(
+    title = md("**Methodological Extraction: Algorithm Comparison**"),
+    subtitle = "Comparison of reconstruction workflows and performance benchmarks"
+  ) |>
+  cols_label(
+    StudyID = "Source",
+    Method_Name = "Algorithm/Tool",
+    Workflow_Type = "Stage",
+    Input_Requirements = "Prerequisites",
+    Validation_Metric = "Metrics",
+    Main_Finding = "Summary of Performance"
+  ) |>
+  # 对自动化程度进行着色处理（可选，增加专业感）
+  tab_style(
+    style = cell_fill(color = "ghostwhite"),
+    locations = cells_body(columns = Automation)
+  ) |>
+  cols_width(
+    Input_Requirements ~ px(250),
+    Main_Finding ~ px(350),
+    Validation_Metric ~ px(180)
+  ) |>
+  theme_gt()
+```
