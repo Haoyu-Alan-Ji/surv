@@ -1,0 +1,1006 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  english,
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+\ifLuaTeX
+\usepackage[bidi=basic]{babel}
+\else
+\usepackage[bidi=default]{babel}
+\fi
+% get rid of language-specific shorthands (see #6817):
+\let\LanguageShortHands\languageshorthands
+\def\languageshorthands#1{}
+\ifLuaTeX
+  \usepackage[english]{selnolig} % disable illegal ligatures
+\fi
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\usepackage{fontspec}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{colortbl}
+\usepackage[normalem]{ulem}
+\usepackage{hhline}
+\newlength\Oldarrayrulewidth
+\newlength\Oldtabcolsep
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{wrapfig}
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Reconstructing individual patient data from published Kaplan-Meier curves: A systematic methodological review and practical guide},
+  pdfauthor={Haoyu Ji},
+  pdflang={en},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Reconstructing individual patient data from published
+Kaplan-Meier curves: A systematic methodological review and practical
+guide}
+\author{Haoyu Ji}
+\date{}
+\begin{document}
+\maketitle
+
+
+\textbf{Short title:} Reconstruction of survival IPD from Kaplan-Meier
+curves\\
+\textbf{Affiliations:} {[}Author affiliations{]}\\
+\textbf{Corresponding author:} {[}Name and email{]}
+
+\section{Abstract}\label{abstract}
+
+Time-to-event outcomes are central to clinical trials, evidence
+synthesis, and health-economic evaluation, but published reports
+commonly provide only hazard ratios, selected survival summaries, and
+Kaplan-Meier curves. The underlying individual patient data are often
+unavailable because of privacy, proprietary, regulatory, and logistical
+restrictions. This review identified and classified methods and software
+for digitizing published Kaplan-Meier curves and reconstructing
+patient-level survival time and event status. Searches of PubMed, Google
+Scholar, arXiv, and the Comprehensive R Archive Network identified 698
+records; after the prespecified source cap, deduplication, screening,
+and full-text assessment, 15 reports were retained and mapped to 11
+method or tool entities. The evidence was organized into foundational
+algorithms, implementations, core reconstruction methods, upstream
+digitization or automation, downstream extensions, and evaluation
+studies. IPDfromKM, KMtoIPD, and the CEN-KM component of RESOLVE-IPD
+were retained as the three core reconstruction approaches because each
+provides distinct reconstruction logic, a runnable implementation, and
+patient-level time-to-event output. Their practical suitability depends
+mainly on the availability of a risk table, the visibility and overlap
+of censoring marks, the presence of an editable vector source, and the
+acceptable implementation burden. Other tools serve primarily as
+implementations, digitizers, automated interfaces, or extensions for
+subgroup and covariate reconstruction. The resulting framework separates
+methodological novelty from software packaging and provides a
+reproducible decision pathway for selecting, validating, and documenting
+a Kaplan-Meier-to-IPD workflow.
+
+\section{1. Introduction}\label{introduction}
+
+Time-to-event outcomes are widely used when the timing of death, disease
+progression, recurrence, treatment discontinuation, or another clinical
+event is more informative than whether the event occurred alone. In
+systematic reviews and meta-analyses, these outcomes are commonly
+synthesized with hazard ratios because they incorporate both event
+timing and censoring, while Kaplan-Meier (KM) curves provide the
+principal graphical summary of the observed survival experience {[}1{]}.
+The same information is also central to trial planning,
+comparative-effectiveness research, and health-economic models that
+require survival over a clinically relevant horizon.
+
+Published summary measures do not preserve all of the information needed
+for secondary survival analysis. A hazard ratio is tied to the
+proportional-hazards framework and may be difficult to interpret when
+treatment effects change over time. Median survival uses only one point
+on the survival distribution, and many reports omit alternative
+estimands such as fixed-time survival probabilities or restricted mean
+survival time (RMST). RMST, defined by the area under the survival curve
+up to a prespecified time, can provide a clinically interpretable
+treatment contrast without requiring proportional hazards {[}2{]}.
+Patient-level time and event data also permit reassessment of
+proportional hazards, flexible parametric modeling, estimation of
+alternative treatment effects, and analyses that cannot be recovered
+from a single published summary {[}3,4{]}.
+
+Individual patient data (IPD) meta-analysis can support harmonized
+outcome definitions, consistent analysis across studies, and detailed
+assessment of participant- and study-level variation. In practice,
+however, original trial IPD are frequently inaccessible. Privacy
+protections, proprietary ownership, data-use agreements, regulatory
+constraints, and the resources required to curate and share trial data
+can all prevent direct access {[}5,6{]}. This creates a recurrent gap
+between the analyses that are scientifically desirable and the
+information that is publicly available.
+
+Published KM figures preserve part of the missing information. Their
+step functions encode event times and changes in survival probability;
+risk tables provide intermittent constraints on cohort attrition; total
+event counts and plotted censoring symbols may add further information.
+Reconstruction methods reverse this reporting process by first
+converting the figure into structured coordinates and then assigning
+event and censoring times so that the reconstructed patient-level data
+reproduce the published curve and accompanying summaries. The iterative
+algorithm introduced by Guyot et al.~established the main reconstruction
+framework and showed that accuracy improves when numbers at risk or
+total event counts are available {[}3{]}. Later implementations improved
+preprocessing, usability, numerical stability, treatment of observed
+censoring marks, and automation {[}4,5,7,8{]}.
+
+The resulting literature is difficult to interpret as a simple catalogue
+of software. A foundational algorithm may appear as author code, a
+package, a command in another language, and a later wrapper without
+representing four independent statistical methods. Conversely, recent
+systems may add a genuinely different reconstruction strategy, automate
+only the digitization stage, or target a downstream problem such as
+complementary-subgroup recovery, covariate generation, or uncertain
+subgroup labels {[}9--12{]}. Validation also differs across studies,
+ranging from known simulated IPD to agreement with published summary
+measures, making published accuracy statistics unsuitable for an
+unqualified ranking.
+
+This study therefore conducted a systematic methodological review of KM
+digitization, KM-to-IPD reconstruction, and closely related extensions.
+Section 2 describes the search, eligibility criteria, evidence
+classification, and report-to-entity mapping. Section 3 compares the
+inputs, reconstruction logic, outputs, validation evidence, and
+implementation constraints of the three core reconstruction approaches.
+Section 4 converts these findings into a practical guide for selecting a
+method, validating the reconstructed data, and preserving a reproducible
+analysis record.
+
+\section{2. Systematic review methods and evidence
+structure}\label{systematic-review-methods-and-evidence-structure}
+
+\subsection{2.1 Review design}\label{review-design}
+
+This systematic methodological review identified and compared methods,
+software implementations, and extensions for extracting information from
+published KM curves and reconstructing time-to-event IPD. The review is
+reported in accordance with PRISMA 2020, with the completed checklist
+provided as S1 Checklist {[}13{]}. Because the included evidence did not
+estimate a common intervention effect, findings were synthesized
+narratively rather than statistically pooled.
+
+\subsection{2.2 Review questions, eligibility criteria, and units of
+analysis}\label{review-questions-eligibility-criteria-and-units-of-analysis}
+
+The review addressed three linked questions: which reports proposed or
+evaluated KM-specific digitization, KM-to-IPD reconstruction,
+censor-identification, or post-reconstruction extension methods; which
+independent method or tool entities those records represented; and how
+the entities differed in required inputs, reconstruction logic,
+censoring treatment, outputs, diagnostics, platform, and
+reproducibility.
+
+Eligible records included original reports proposing a KM-specific
+digitization, time-to-event reconstruction, censor-identification, or
+reconstruction extension method; software packages, commands, web
+applications, or research code with sufficient documentation to
+reproduce the central workflow; and substantive validation studies.
+Application papers that only used reconstructed IPD, generic graph
+digitizers without a KM-specific contribution, narrative reviews without
+new validation, and records lacking sufficient technical information
+were excluded. Publications, packages, web applications, and code
+repositories were treated as report or software records. Multiple
+records could map to one method or tool entity, while sequential outputs
+from the same research group were retained separately when they
+introduced materially different reconstruction logic or targets.
+
+\subsection{2.3 Information sources, screening, and data
+extraction}\label{information-sources-screening-and-data-extraction}
+
+PubMed, Google Scholar Advanced, arXiv, and the Comprehensive R Archive
+Network were searched on 24 May 2026 for records published from 2012
+onward. PubMed used three complementary concept groups covering IPD
+reconstruction, curve digitization or automation, and method validation.
+Google Scholar used four advanced-search combinations with relevance
+sorting, while arXiv and the Comprehensive R Archive Network were used
+to identify preprints and software records. Complete search strings,
+settings, source limits, and returned counts are provided in S1 Table.
+
+The ten logged searches returned 698 records. One Google Scholar query
+returned 345 results, of which the first 200 relevance-ranked records
+were designated for screening; 145 returned results therefore remained
+outside the screening set. After this source-level cap, 553 records were
+designated for deduplication and screening. Records were deduplicated
+using bibliographic identifiers and normalized titles, screened against
+the prespecified eligibility criteria, and assessed in full text. For
+eligible records, extraction covered the target task, required figure
+and structured inputs, use of risk tables, total events and censor
+marks, digitization route, reconstruction algorithm, outputs, diagnostic
+measures, platform, implementation status, validation design, and
+reported limitations. Report-to-entity mapping was performed after
+eligibility assessment so that papers, packages, interfaces, and
+wrappers sharing one methodological core were not counted as separate
+methods.
+
+\subsection{2.4 Evidence classification and study
+selection}\label{evidence-classification-and-study-selection}
+
+The evidence was organized into six functional layers: foundational
+algorithms, implementation records, core reconstruction methods,
+upstream digitization or end-to-end automation, downstream extensions,
+and evaluation or contextual evidence. Core reconstruction was defined
+as the conversion of structured KM-derived information into
+patient-level records containing at least survival time and event
+status. This classification separated methodological novelty from
+software packaging and defined the analytic role of each included entity
+(Table 1).
+
+\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}
+
+\global\setlength{\Oldtabcolsep}{\tabcolsep}
+
+\setlength{\tabcolsep}{2pt}
+
+\renewcommand*{\arraystretch}{1.5}
+
+
+
+\providecommand{\ascline}[3]{\noalign{\global\arrayrulewidth #1}\arrayrulecolor[HTML]{#2}\cline{#3}}
+
+\begin{longtable}[c]{|p{1.15in}|p{1.35in}|p{2.05in}|p{1.75in}}
+
+\caption{\label{tbl-evidence-layers}Evidence layers and analytic
+disposition}
+
+\tabularnewline
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}
+
+\multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Layer}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Representative\ entities}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Defining\ contribution}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Treatment\ in\ the\ review}}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}\endfirsthead 
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}
+
+\multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Layer}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Representative\ entities}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Defining\ contribution}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Treatment\ in\ the\ review}}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}\endhead
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Foundational\ algorithm}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Guyot/iKM}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Original\ iterative\ reconstruction\ logic\ using\ digitized\ Kaplan-Meier\ coordinates\ and\ reported\ risk-set\ information.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Retained\ as\ the\ methodological\ baseline;\ not\ presented\ as\ a\ current\ standalone\ package.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Implementation\ layer}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} ipdfc;\ survHE;\ reconstructKM}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Operational\ implementations\ or\ workflow\ packaging\ of\ Guyot/iKM\ and\ closely\ related\ reconstruction\ steps.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Described\ narratively\ as\ platform\ and\ workflow\ choices;\ not\ counted\ as\ independent\ method\ families.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Core\ reconstruction}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} IPDfromKM;\ KMtoIPD;\ CEN-KM/RESOLVE-IPD}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Distinct\ arm-level\ reconstruction\ logic\ with\ a\ runnable\ implementation\ and\ patient-level\ time\ and\ event\ output.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Compared\ directly\ in\ Section\ 3\ and\ Table\ 2.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Upstream\ digitization\ and\ automation}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} SurvdigitizeR;\ KM-GPT}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Automated\ coordinate\ extraction\ or\ end-to-end\ image\ processing\ around\ a\ reconstruction\ core.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Included\ as\ workflow\ options,\ but\ not\ automatically\ treated\ as\ new\ statistical\ reconstruction\ methods.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Downstream\ extensions}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} KMSubtraction;\ SynthIPD;\ MAPLE}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Recovery\ of\ complementary\ subgroups,\ generation\ of\ covariate-rich\ synthetic\ data,\ or\ propagation\ of\ subgroup-label\ uncertainty.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Discussed\ separately\ because\ the\ target\ differs\ from\ standard\ arm-level\ time-to-event\ reconstruction.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.15in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Evaluation\ and\ context}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.35in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Kim\ et\ al.\ (2025)}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 2.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Practical\ validation\ or\ comparison\ of\ existing\ reconstruction\ workflows.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.75in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Used\ to\ interpret\ accuracy\ and\ implementation\ evidence;\ not\ counted\ as\ a\ new\ method.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}
+
+
+\end{longtable}
+
+\arrayrulecolor[HTML]{000000}
+
+\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}
+
+\global\setlength{\tabcolsep}{\Oldtabcolsep}
+
+\renewcommand*{\arraystretch}{1}
+
+\emph{Note:} Classification is based on functional contribution and
+reconstruction target rather than author overlap.
+
+After the source-level cap, 553 records entered deduplication.
+Twenty-seven duplicates were removed, leaving 526 records for title and
+abstract screening. Of these, 507 were excluded and 19 reports were
+assessed in full text. Four reports were excluded because they were
+application-only reports (n = 2), were not specific to KM digitization
+or reconstruction (n = 1), or lacked sufficient technical documentation
+(n = 1). Fifteen reports were included and mapped to 11 method or tool
+entities. The study-selection sequence is shown in Fig 1.
+
+{[}FIGURE INSERTION: Fig 1. PRISMA 2020 flow diagram{]}
+
+\textbf{Fig 1. PRISMA 2020 flow diagram for identification, screening,
+eligibility assessment, and inclusion.} Report-level counts are shown
+through full-text inclusion; mapping to method and tool entities was
+performed after eligibility assessment.
+
+\subsection{2.5 Boundary of the core
+comparison}\label{boundary-of-the-core-comparison}
+
+The Guyot/iKM algorithm was retained as the methodological baseline,
+while ipdfc, survHE, and reconstructKM were treated as implementation
+records because they operationalize the same foundational reconstruction
+family in different languages or broader workflows {[}3,4,14,15{]}.
+SurvdigitizeR was retained as an upstream digitization tool because it
+returns curve coordinates rather than patient-level event histories
+{[}8{]}. KM-GPT was treated as an end-to-end automation system whose
+reconstruction stage remains based on an adapted iKM core {[}10{]}.
+KMSubtraction, SynthIPD, and MAPLE address complementary-subgroup
+recovery, covariate-rich synthetic data, or subgroup-label uncertainty
+and therefore target questions beyond standard arm-level reconstruction
+{[}9,11,12{]}. These tools remain relevant to the overall workflow but
+were not included in the direct comparison of independent arm-level
+reconstruction logics.
+
+\section{3. Functional analysis of reconstruction
+methods}\label{functional-analysis-of-reconstruction-methods}
+
+\subsection{3.1 Scope and core methods}\label{scope-and-core-methods}
+
+The functional analysis compared capabilities documented in
+peer-reviewed articles, preprints, software records, public
+repositories, and web documentation available through 13 August 2026. A
+method entered the core comparison when it had a distinct and
+explainable reconstruction logic, sufficient technical detail, a
+publicly runnable implementation, and a primary output containing
+patient-level survival time and event status. IPDfromKM, KMtoIPD, and
+CEN-KM within RESOLVE-IPD met these criteria. Guyot/iKM remained the
+baseline, while implementations, digitizers, automated interfaces, and
+downstream extensions were analyzed in their respective layers. Table 2
+summarizes the features that directly determine how the three core
+methods can be used.
+
+\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}
+
+\global\setlength{\Oldtabcolsep}{\tabcolsep}
+
+\setlength{\tabcolsep}{2pt}
+
+\renewcommand*{\arraystretch}{1.5}
+
+
+
+\providecommand{\ascline}[3]{\noalign{\global\arrayrulewidth #1}\arrayrulecolor[HTML]{#2}\cline{#3}}
+
+\begin{longtable}[c]{|p{1.05in}|p{1.72in}|p{1.72in}|p{1.81in}}
+
+\caption{\label{tbl-core-methods}Core reconstruction methods: inputs,
+logic, outputs, and implementation considerations}
+
+\tabularnewline
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}
+
+\multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Domain}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{IPDfromKM}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{KMtoIPD}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{CEN-KM\ /\ RESOLVE-IPD}}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}\endfirsthead 
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}
+
+\multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{Domain}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{IPDfromKM}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{KMtoIPD}}}}} & \multicolumn{1}{>{\cellcolor[HTML]{E6E6E6}\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} \textbf{CEN-KM\ /\ RESOLVE-IPD}}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}\endhead
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Primary\ target}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Arm-level\ time-to-event\ IPD\ from\ a\ published\ Kaplan-Meier\ curve.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Arm-level\ time-to-event\ IPD\ from\ observed\ survival\ drops\ and,\ when\ available,\ marked\ censoring\ times.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Arm-level\ time-to-event\ IPD\ within\ a\ broader\ vector-extraction\ and\ subgroup-analysis\ framework.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Recommended\ input}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Digitized\ time-survival\ coordinates,\ baseline\ cohort\ size,\ and\ interval-specific\ numbers\ at\ risk;\ total\ events\ may\ be\ added.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Total\ sample\ size\ and\ lower\ coordinates\ of\ survival\ drops;\ digitized\ censoring\ times\ are\ optional\ but\ central\ when\ no\ risk\ table\ is\ available.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Sample\ size,\ event/drop\ times,\ survival\ probabilities,\ and\ optional\ censoring\ times;\ VEC-KM\ additionally\ requires\ an\ eligible\ vector\ PDF\ or\ SVG.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Risk\ table}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Strongly\ recommended\ because\ interval-specific\ risk\ sets\ constrain\ inferred\ censoring\ counts.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Not\ required.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Optional\ in\ the\ documented\ reconstruction\ core;\ current\ risk-table\ alignment\ remains\ less\ mature\ than\ the\ vector/censor\ route.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Censor\ information}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Censoring\ is\ inferred\ within\ risk-table\ intervals\ rather\ than\ treating\ each\ plotted\ mark\ as\ an\ observed\ censoring\ time.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Digitized\ censoring\ times\ can\ be\ inserted\ directly;\ ambiguous\ or\ overlapping\ marks\ remain\ a\ source-figure\ limitation.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Explicit\ and\ duplicate\ censoring\ times\ can\ be\ represented\ while\ candidate\ allocations\ are\ evaluated\ against\ the\ target\ curve.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Digitization\ route}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Interactive\ point\ acquisition\ in\ the\ R/Shiny\ workflow\ or\ externally\ digitized\ coordinates.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} External\ digitization\ of\ the\ lower\ step\ coordinates\ and\ censor\ marks.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} VEC-KM\ extracts\ curves\ and\ censor\ symbols\ from\ vector\ graphics;\ target-panel\ identification\ is\ still\ required.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Reconstruction\ logic}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Modified\ iterative\ Guyot/iKM\ algorithm\ with\ automated\ preprocessing\ and\ numerical\ safeguards.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Greedy\ event\ allocation\ at\ observed\ Kaplan-Meier\ drops\ with\ optional\ direct\ use\ of\ censoring\ times.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} CEN-KM\ branch-and-compare\ search\ over\ censoring\ configurations,\ followed\ by\ target-curve\ comparison.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Primary\ output}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Patient-level\ survival\ time\ and\ event\ status,\ reconstructed\ curve,\ risk-set\ comparison,\ and\ standard\ survival\ summaries.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Patient-level\ survival\ time\ and\ event\ indicator.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Patient-level\ survival\ time\ and\ event\ indicator;\ MAPLE\ can\ add\ ensembles\ of\ subgroup\ labels\ in\ the\ broader\ framework.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Diagnostics}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Curve\ and\ risk-set\ comparison\ with\ RMSE,\ MAE,\ maximum\ absolute\ error,\ Kolmogorov-Smirnov\ statistic,\ and\ survival\ summaries.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} The\ method\ paper\ evaluates\ curve\ fit,\ hazard\ ratios,\ and\ survival\ quantiles;\ a\ standardized\ package\ report\ is\ not\ built\ in.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Target-curve\ tolerance\ and\ refitting\ checks;\ research-code\ outputs\ require\ explicit\ archiving\ of\ inputs\ and\ settings.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+
+
+
+
+\multicolumn{1}{>{\raggedright}p{\dimexpr 1.05in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Implementation\ considerations}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Peer-reviewed\ R\ package\ and\ Shiny\ workflow;\ well\ suited\ to\ reproducible\ local\ analysis\ when\ risk-table\ information\ is\ available.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.72in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Peer-reviewed\ R\ implementation\ with\ a\ compact\ workflow;\ performance\ depends\ on\ reliable\ identification\ of\ drops\ and\ censor\ marks.}}}} & \multicolumn{1}{>{\raggedright}p{\dimexpr 1.81in+0\tabcolsep}}{\advance\leftskip by 4.0pt\relax \advance\rightskip by 4.0pt\relax \textcolor[HTML]{000000}{\fontsize{9}{9}\selectfont{{\fontspec{Times New Roman} Preprint\ and\ research-code\ framework\ with\ vector-specific\ advantages\ and\ greater\ version-control\ and\ reproducibility\ burden.}}}} \\
+
+\noalign{\global\arrayrulewidth 0pt}\arrayrulecolor[HTML]{000000}
+
+\hhline{>{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}->{\arrayrulecolor[HTML]{666666}\global\arrayrulewidth=1.5pt}-}
+
+
+\end{longtable}
+
+\arrayrulecolor[HTML]{000000}
+
+\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}
+
+\global\setlength{\tabcolsep}{\Oldtabcolsep}
+
+\renewcommand*{\arraystretch}{1}
+
+\emph{Note:} The comparison is documentation-based and does not
+represent a new head-to-head execution benchmark.
+
+\subsection{3.2 Comparative characteristics, validation, and practical
+limitations}\label{comparative-characteristics-validation-and-practical-limitations}
+
+IPDfromKM combines interactive coordinate acquisition, automated
+preprocessing, a modified iKM reconstruction algorithm, and diagnostic
+summaries in an R package and Shiny workflow {[}5{]}. Its recommended
+inputs are digitized time-survival coordinates, baseline cohort size,
+and risk-table times with corresponding numbers at risk; a total event
+count may provide an additional constraint. The risk table is central to
+the method because interval-specific risk sets constrain the number of
+inferred censoring observations. Although the algorithm can run with
+baseline cohort size alone, the censoring pattern is then less
+identifiable and the reconstruction is more weakly constrained.
+
+KMtoIPD uses the total sample size and the lower coordinates of observed
+survival drops to allocate event counts and can insert digitized
+censoring times directly into the patient-level sequence {[}7{]}. It
+therefore does not require a risk table and is most informative when
+censoring marks are clearly visible and can be separated from curve
+steps. Its use of plotted censoring information does not remove
+ambiguity from the source figure: one mark may conceal multiple
+censoring events, marks may overlap, and raster compression or multiple
+curves may prevent reliable assignment.
+
+RESOLVE-IPD separates high-fidelity vector extraction from
+censoring-informed reconstruction {[}12{]}. VEC-KM extracts curves and
+censor symbols from eligible vector PDF or SVG content, while CEN-KM
+evaluates candidate censoring configurations against the target curve
+through a branch-and-compare procedure. This permits explicit and
+duplicate censoring times and differs from both risk-table-constrained
+iKM reconstruction and the adapted-iKM pipeline used by KM-GPT. The
+method's vector-specific advantages are accompanied by research-code
+maturity, target-panel identification, and a greater need to freeze
+versions, parameters, and intermediate files.
+
+All three methods return patient-level survival time and event status.
+IPDfromKM additionally supplies reconstructed curves, risk-set
+comparisons, RMSE, MAE, maximum absolute error, a Kolmogorov-Smirnov
+statistic, and common survival summaries {[}5{]}. KMtoIPD returns a
+compact patient-level dataset; the accompanying study evaluates curve
+agreement, hazard ratios, and survival quantiles, so a consistent
+diagnostic report must be constructed around the output {[}7{]}.
+RESOLVE-IPD uses target-curve tolerance and refitting checks and can add
+ensembles of plausible subgroup labels through MAPLE, although those
+label outputs belong to the extension layer rather than the core
+arm-level reconstruction. Diagnostic thresholds proposed in individual
+papers were treated as method-specific empirical rules rather than
+universal acceptance criteria.
+
+Validation evidence differed in target and reference standard.
+Guyot/iKM, IPDfromKM, and KMtoIPD used simulated data, original IPD, or
+published summaries to evaluate reconstructed curves and survival
+estimates {[}3,5,7{]}. SurvdigitizeR evaluated coordinate extraction
+rather than the complete patient-level reconstruction {[}8{]}, while the
+principal evidence for KM-GPT, SynthIPD, and RESOLVE-IPD remained
+author-led preprint validation at the evidence freeze {[}10--12{]}. The
+real-world study by Kim et al.~provided useful external evidence for an
+existing workflow, but differences in figures, information availability,
+sample size, censoring, and evaluation metrics prevented a direct
+cross-method ranking {[}6{]}. Simulation evidence was interpreted
+according to the aims, data-generating mechanisms, estimands, methods,
+and performance measures reported by each study {[}16{]}.
+
+Implementation choices alter the practical workflow without changing the
+underlying method family. ipdfc provides a peer-reviewed Stata
+implementation of iKM, survHE embeds reconstruction within a
+health-economic survival-modeling suite, and reconstructKM supplies R
+utilities for formatted curve and risk-table inputs {[}4,14,15{]}. Local
+R, Stata, or Python workflows support versioned scripts and offline
+archiving, whereas browser and model-assisted systems may introduce
+service availability, data-transfer, credential, and model-version
+dependencies. These differences should be recorded as reproducibility
+characteristics rather than interpreted as evidence of statistical
+superiority.
+
+Across methods, the most consequential failures arise before or during
+reconstruction: the wrong curve may be matched to a risk table, axes may
+be clipped or miscalibrated, censoring symbols may be unobservable, and
+low-resolution images may prevent reproducible localization of curve
+steps. The response depends on whether the missing information can be
+replaced by another reliable constraint. A reconstruction should be
+revised or abandoned when source identity, calibration, or validation
+cannot be defended (Fig 2).
+
+{[}FIGURE INSERTION: Fig 2 from KM\_IPD\_review\_figures.pptx{]}
+
+\textbf{Fig 2. Common failure signals and response rules for KM-to-IPD
+reconstruction.} The compact framework links missing risk information,
+ambiguous censoring, poor image quality, and curve-risk mismatch to an
+alternative input route, redigitization, sensitivity analysis, or an
+explicit stop decision.
+
+\section{4. Practical guide for method selection and
+reconstruction}\label{practical-guide-for-method-selection-and-reconstruction}
+
+\subsection{4.1 Define the target
+output}\label{define-the-target-output}
+
+Method selection begins with the intended patient-level output. Standard
+arm-level reconstruction seeks a dataset containing survival time, event
+status, and an arm identifier for each reconstructed patient. A
+different workflow is required when the target is an unreported
+complementary subgroup: the overall cohort and a known subgroup must
+first be reconstructed before KMSubtraction can estimate the remaining
+subgroup {[}9{]}. Covariate-rich synthetic data or uncertain subgroup
+labels require additional published subgroup summaries and belong to the
+SynthIPD or MAPLE extension layer rather than ordinary arm-level
+reconstruction {[}11,12{]}.
+
+\subsection{4.2 Match the method to the source figure and available
+constraints}\label{match-the-method-to-the-source-figure-and-available-constraints}
+
+For standard arm-level IPD, the first decision is whether an editable
+vector figure is available. Eligible vector PDF or SVG content can be
+routed through VEC-KM and CEN-KM when precise extraction of curve steps
+and censor symbols is important and research-code use is acceptable
+{[}12{]}. Raster images, screenshots, and non-editable PDFs require
+manual or automated digitization before reconstruction. SurvdigitizeR
+can reduce the manual burden of raster coordinate extraction, whereas
+KM-GPT offers an end-to-end image-to-IPD route when an external model,
+web service, and data transfer are acceptable {[}8,10{]}.
+
+Within a raster or externally digitized workflow, a reliable risk table
+favors IPDfromKM or another documented iKM implementation because
+interval-specific risk sets directly constrain inferred censoring
+{[}3,5{]}. When no risk table is available but survival drops and censor
+marks are clearly distinguishable, KMtoIPD can use the visible censoring
+information directly {[}7{]}. Overlapping or ambiguous censor marks
+favor a vector/CEN-KM route when available; otherwise, alternative
+plausible allocations should be examined and the resulting uncertainty
+reported. Reconstruction should not proceed when the axes cannot be
+calibrated or when the curve cannot be uniquely matched to its legend,
+arm, and risk table. The complete decision pathway is summarized in Fig
+3.
+
+{[}FIGURE INSERTION: Fig 3 from KM\_IPD\_review\_figures.pptx{]}
+
+\textbf{Fig 3. Method-selection pathway for reconstruction from
+published Kaplan-Meier figures.} The pathway starts with the target
+output and source format, then uses risk-table availability, censor-mark
+quality, vector eligibility, automation requirements, and implementation
+constraints to select a reconstruction route.
+
+\subsection{4.3 Apply a common reconstruction and validation
+workflow}\label{apply-a-common-reconstruction-and-validation-workflow}
+
+Regardless of the selected tool, the analysis should preserve a common
+sequence. The source record should identify the article version, figure
+and panel, treatment arm, file type, and date of acquisition. The target
+panel and risk table should be isolated, the axes calibrated to the
+reported time and survival scales, and curve and censor coordinates
+extracted without discarding the original image or raw points. Cleaning
+should sort coordinates by time, remove exact duplicates, enforce valid
+survival bounds, document any monotonicity correction, and verify that
+curve, legend, arm label, baseline sample size, and risk-table times
+refer to the same population.
+
+Reconstruction should be run with all available constraints and then
+evaluated by re-estimating the KM curve from the patient-level data. At
+minimum, validation should include a visual overlay and comparison of
+reported numbers at risk when present. Fixed-time survival
+probabilities, median survival, hazard ratios, or RMST should also be
+compared when the publication provides compatible summaries {[}3,5,6{]}.
+Disagreement should trigger review of panel isolation, axis calibration,
+digitization, risk-table transcription, censor interpretation, and
+method assumptions rather than automatic acceptance of a
+complete-looking dataset.
+
+The final archive should contain the source figure, raw and cleaned
+coordinates, risk-table and censor inputs, reconstruction parameters,
+patient-level output, diagnostic plots and summaries, software and
+dependency versions, scripts, and a log of manual changes. For
+stochastic, web-based, or model-assisted workflows, the random seed,
+model or service version, execution date, and any unavailable external
+dependency should also be recorded. This common record allows the
+reconstruction to be repeated, audited, or replaced when a
+higher-quality source or improved method becomes available.
+
+\section{References}\label{references}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{0}{1}
+\bibitem[\citeproctext]{ref-tierney2007}
+\CSLLeftMargin{1. }%
+\CSLRightInline{Tierney JF, Stewart LA, Ghersi D, Burdett S, Sydes MR.
+\href{https://doi.org/10.1186/1745-6215-8-16}{Practical methods for
+incorporating summary time-to-event data into meta-analysis}. Trials.
+2007;8:16. }
+
+\bibitem[\citeproctext]{ref-royston2013}
+\CSLLeftMargin{2. }%
+\CSLRightInline{Royston P, Parmar MKB.
+\href{https://doi.org/10.1186/1471-2288-13-152}{Restricted mean survival
+time: An alternative to the hazard ratio for the design and analysis of
+randomized trials with a time-to-event outcome}. BMC Medical Research
+Methodology. 2013;13:152. }
+
+\bibitem[\citeproctext]{ref-guyot2012}
+\CSLLeftMargin{3. }%
+\CSLRightInline{Guyot P, Ades AE, Ouwens MJNM, Welton NJ.
+\href{https://doi.org/10.1186/1471-2288-12-9}{Enhanced secondary
+analysis of survival data: Reconstructing the data from published
+kaplan-meier survival curves}. BMC Medical Research Methodology.
+2012;12:9. }
+
+\bibitem[\citeproctext]{ref-wei2017}
+\CSLLeftMargin{4. }%
+\CSLRightInline{Wei Y, Royston P.
+\href{https://doi.org/10.1177/1536867X1801700402}{Reconstructing
+time-to-event data from published kaplan-meier curves}. The Stata
+Journal. 2017;17(4):786--802. }
+
+\bibitem[\citeproctext]{ref-liu2021}
+\CSLLeftMargin{5. }%
+\CSLRightInline{Liu N, Zhou Y, Lee JJ.
+\href{https://doi.org/10.1186/s12874-021-01308-8}{{IPDfromKM}:
+Reconstruct individual patient data from published kaplan-meier survival
+curves}. BMC Medical Research Methodology. 2021;21:111. }
+
+\bibitem[\citeproctext]{ref-kim2025}
+\CSLLeftMargin{6. }%
+\CSLRightInline{Kim J, Chalise P, He J.
+\href{https://doi.org/10.1016/j.conctc.2025.101542}{Reconstructing
+patient level survival data from published kaplan-meier curves}.
+Contemporary Clinical Trials Communications. 2025;47:101542. }
+
+\bibitem[\citeproctext]{ref-rogula2022}
+\CSLLeftMargin{7. }%
+\CSLRightInline{Rogula B, Lozano-Ortega G, Johnston KM.
+\href{https://doi.org/10.1177/23814683221077643}{A method for
+reconstructing individual patient data from kaplan-meier survival curves
+that incorporate marked censoring times}. MDM Policy \& Practice.
+2022;7(1):23814683221077643. }
+
+\bibitem[\citeproctext]{ref-zhang2024}
+\CSLLeftMargin{8. }%
+\CSLRightInline{Zhang JZ, Rios JD, Pechlivanoglou T, Yang A, Zhang Q,
+Deris D, et al.
+\href{https://doi.org/10.1186/s12874-024-02273-8}{{SurvdigitizeR}: An
+algorithm for automated survival curve digitization}. BMC Medical
+Research Methodology. 2024;24:147. }
+
+\bibitem[\citeproctext]{ref-zhao2022}
+\CSLLeftMargin{9. }%
+\CSLRightInline{Zhao J, Syn NL, Tan BKJ, Yap DWT, Teo CB, Chan YH, et
+al. \href{https://doi.org/10.1186/s12874-022-01567-z}{{KMSubtraction}:
+Reconstruction of unreported subgroup survival data utilizing published
+kaplan-meier survival curves}. BMC Medical Research Methodology.
+2022;22:93. }
+
+\bibitem[\citeproctext]{ref-kmgpt2025}
+\CSLLeftMargin{10. }%
+\CSLRightInline{Zhao Y, Sun H, Ding Y, Xu Y. {KM-GPT}: An automated
+pipeline for reconstructing individual patient data from kaplan-meier
+plots {[}Internet{]}. 2025. Available from:
+\url{https://arxiv.org/abs/2509.18141}}
+
+\bibitem[\citeproctext]{ref-synthipd2026}
+\CSLLeftMargin{11. }%
+\CSLRightInline{Zhao Z, Ren Z, Zhai G, Hu F, Ma W, Xie E, et al.
+{SynthIPD}: Training-free synthetic individual patient data generation
+{[}Internet{]}. 2026. Available from:
+\url{https://arxiv.org/abs/2509.16466}}
+
+\bibitem[\citeproctext]{ref-resolve2026}
+\CSLLeftMargin{12. }%
+\CSLRightInline{Lang L, Zhao Y, Gao Q, Xu Y. {RESOLVE-IPD}:
+High-fidelity individual patient data reconstruction and
+uncertainty-aware subgroup meta-analysis {[}Internet{]}. 2026. Available
+from: \url{https://arxiv.org/abs/2511.01785}}
+
+\bibitem[\citeproctext]{ref-page2021}
+\CSLLeftMargin{13. }%
+\CSLRightInline{Page MJ, McKenzie JE, Bossuyt PM, Boutron I, Hoffmann
+TC, Mulrow CD, et al. \href{https://doi.org/10.1136/bmj.n71}{The
+{PRISMA} 2020 statement: An updated guideline for reporting systematic
+reviews}. BMJ. 2021;372:n71. }
+
+\bibitem[\citeproctext]{ref-baio2020}
+\CSLLeftMargin{14. }%
+\CSLRightInline{Baio G.
+\href{https://doi.org/10.18637/jss.v095.i14}{{survHE}: Survival analysis
+for health economic evaluation and cost-effectiveness modeling}. Journal
+of Statistical Software. 2020;95(14):1--47. }
+
+\bibitem[\citeproctext]{ref-reconstructkm2025}
+\CSLLeftMargin{15. }%
+\CSLRightInline{Sun R. {reconstructKM}: Reconstruct individual-level
+data from published kaplan-meier plots {[}Internet{]}. 2025. Available
+from: \url{https://cran.r-project.org/package=reconstructKM}}
+
+\bibitem[\citeproctext]{ref-morris2019}
+\CSLLeftMargin{16. }%
+\CSLRightInline{Morris TP, White IR, Crowther MJ.
+\href{https://doi.org/10.1002/sim.8086}{Using simulation studies to
+evaluate statistical methods}. Statistics in Medicine.
+2019;38(11):2074--102. }
+
+\end{CSLReferences}
+
+\section{Supporting information
+captions}\label{supporting-information-captions}
+
+\textbf{S1 Checklist. PRISMA 2020 checklist.} Completed reporting
+checklist for the systematic methodological review.
+
+\textbf{S1 Table. Full search strategies and source-level counts.} Exact
+database and platform queries, search dates, limits, raw hits, and the
+Google Scholar source cap.
+
+\textbf{S1 Appendix. Review protocol and amendments.} Review questions,
+eligibility criteria, extraction fields, report-to-entity mapping rules,
+and amendment history.
+
+
+
+
+\end{document}
