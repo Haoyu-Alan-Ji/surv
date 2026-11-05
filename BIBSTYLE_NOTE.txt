@@ -1,0 +1,1 @@
+The bundled plos2015.bst is a Vancouver-compatible local style used to make the project self-contained and reproducible in Overleaf. It produces numbered PLOS-style references. At final accepted-source preparation, it may be replaced one-for-one with the plos2015.bst distributed in the current official PLOS LaTeX template; no change to main.tex is required.
