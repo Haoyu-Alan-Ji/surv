@@ -1,0 +1,125 @@
+---
+title: "Methods: Clinicopathologic Machine Learning for Oncotype DX Classification"
+subtitle: "Manuscript-only draft"
+date: "2026-11-09"
+lang: en
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    embed-resources: true
+execute:
+  eval: false
+  echo: false
+  warning: false
+  message: false
+editor: source
+---
+
+# Manuscript Methods
+
+## Study design and analytical cohort
+
+We conducted a retrospective, single-cohort prediction analysis using routinely recorded demographic and clinicopathologic characteristics and observed Oncotype DX Recurrence Scores (RS). The analytic data set contained **1,651 patients** after the existing data-cleaning and eligibility procedures. Records were analyzed at the patient level, with an observed continuous RS used to derive binary genomic-risk outcomes and an independently recorded indicator of actual chemotherapy receipt. The primary objective was to assess discrimination of high RS; a secondary analysis characterized how observed and model-predicted genomic-risk categories aligned with actual chemotherapy utilization.
+
+The previously documented preprocessing excluded the male and 18–49-year age strata. The source cohort's institution(s), calendar period, histologic eligibility rules, handling of multiple records, and precise exclusions should be inserted after verification against the data-extraction protocol; these details cannot be reliably recovered from the available code excerpts. This retrospective prediction analysis was not designed to estimate causal chemotherapy effects or the benefit of withholding treatment.
+
+## Outcomes and predictor set
+
+For an integer RS threshold c, the binary genomic-risk endpoint was defined as $Y_i^{(c)}=\mathbb{I}(\mathrm{RS}_i>c)$, with `High` assigned when the observed RS exceeded c, and `Low` otherwise. This definition was applied directly to the continuous `odx_score` variable; the source data's pre-existing `odx_group` label, which could contain an `Intermediate` category, was not used to define the analysis endpoint. Thresholds $c=25,26,\ldots,40$ were evaluated **separately**, rather than optimizing the RS cutoff within a single nested-CV run. RS >25 was retained as a literature-aligned reference definition, whereas RS >30 and RS >35 were examined as clinically interpretable exploratory definitions. A region of relatively similar observed AUROC values across cutoffs was assessed descriptively, not treated as a prespecified clinical threshold or independently validated choice.
+
+The second outcome was **observed receipt of chemotherapy**, coded `Yes` versus `No` using `chemo_group`. This was a descriptive clinical-treatment outcome, not an indicator of chemotherapy efficacy, necessity, or avoidability. Unknown chemotherapy categories were not to be coded as `No`.
+
+The primary machine-learning model used the same seven available predictors across RS endpoints: age group (`age_group`), race group (`race_group`), tumor-size category (`tumor_size_combined` in the cleaned model data), stage group (`stage_group`), histologic group (`histo_group`), tumor grade (`grade_group`), and lymphovascular invasion (`lvi_group`). These variables were treated according to the cleaned analytic encodings. In the documented workflow, tumor-size measurements had been grouped, and categories included histologic and grade aggregations; the `Not present/Missing` category was used for at least one LVI encoding. The raw chart-review file also contained a numerical tumor-size field with a sentinel value of 999; that raw sentinel must not be interpreted as a genuine physical measurement. Exact category maps and missing-data transformations will be reported from the final preprocessing script.
+
+Neither chemotherapy receipt nor the observed RS was included as an input predictor in the seven-variable MLP. The two Logistic nomograms described below used the same clinicopathologic predictor set, with different dependent variables. In particular, the chemotherapy nomogram did **not** constitute a model of clinical chemotherapy benefit and was not specified as a model that uses the observed genomic score to predict the treatment decision.
+
+## Preprocessing and class-imbalance handling
+
+Within the MLP validation procedure, transformations that could learn from a data subset were fitted using the **current training portion** and applied to the corresponding validation or outer-test portion. The implemented `prep_mlp()` workflow was designed to handle training-derived missing-data and category processing, construct numerical dummy variables, align encoded columns between training and prediction data, remove near-zero-variance inputs, and standardize inputs using training-derived location and scale parameters. Input columns were renamed to simple synthetic variable names compatible with the `RSNNS` modeling interface. This train/apply separation was intended to prevent information leakage from an outer-test fold into preprocessing.
+
+To address the uncommon High class, MLP fitting used **random oversampling of observed High cases in the current training subset**, not synthetic observations and not a customized class-weighted loss function. For a nominal oversampling factor $w\geq1$, the documented implementation appended approximately $n_{\mathrm{extra}}=\operatorname{round}\{n_{\mathrm{High}}(w-1)\}$
+
+High-case indices sampled **with replacement** before shuffling and fitting the model. Thus w=1 corresponds to no additional High-case sampling. Oversampling was applied only when fitting the model on a training fold; held-out observations remained unchanged. This operation must not be described as SMOTE, focal loss, or probability calibration.
+
+## Primary multilayer perceptron model
+
+The primary classifier was a feed-forward multilayer perceptron (MLP) implemented with `RSNNS::mlp()` in R. The ultimately retained development configuration used two hidden layers with **eight units per layer** (`size = c(8, 8)`) and a maximum of **200 training iterations** (`maxit = 200`). For binary classification, a nonlinear output activation (`linOut = FALSE`) produced a continuous model score used to rank and classify patients as High versus Low.
+
+The compact 8–8 architecture was selected following exploratory architecture screening that included shallow two-layer alternatives and smaller network widths. The final 25–40 cutoff analyses held this architecture fixed rather than searching network topology within every inner CV loop. Because this exploratory architecture selection also used the available cohort, nested-CV performance should be interpreted as internal validation **conditional on the development decisions already made**, rather than as an unbiased assessment of every upstream modeling choice.
+
+The principal retained tuning dimension was the oversampling factor w; a working grid previously used in this project was $1.00,1.05,\ldots,1.40$. The exact grid and random seeds recorded in the saved 25–40 analyses should be confirmed from the corresponding `selected_settings` and `tuning` objects before submission. MLP outputs were treated as **discrimination scores** for AUROC and threshold selection; calibration of MLP probabilities was not established by fitting the Logistic nomograms.
+
+## Nested cross-validation and decision-threshold selection
+
+Internal validation of the MLP was conducted using **five outer folds and four inner folds**. For each RS cutoff, the outcome was defined before its fold construction. Class-stratified outer folds separated the data into approximately four-fifths outer training observations and one-fifth untouched outer-test observations; the inner folds were constructed only within each outer training set. Each patient served as an outer-test observation exactly once per cutoff.
+
+For each candidate oversampling factor, the model was fitted to three inner folds and used to predict the remaining inner validation fold, repeating until all four inner folds yielded out-of-fold scores. Pooled inner-validation scores were used to evaluate discrimination and determine the operating probability threshold. The implementation selected candidate model settings primarily using inner-validation AUROC; operating thresholds were selected by an accuracy-constrained rule prioritizing identification of High cases. The recorded `find_threshold()` strategy required a minimum accuracy (typically **0.85** for the nested-CV MLP workflow) and favored High sensitivity among qualifying thresholds, with further tie-breaking criteria. The exact threshold grid and fallback when no threshold met the accuracy constraint require verification from the final function body.
+
+After tuning, preprocessing and the MLP were refitted on the entire outer training portion using the selected settings. The resulting model generated scores for that fold's untouched outer-test patients. The probability threshold chosen exclusively within the corresponding outer training data was applied without subsequent outer-test re-optimization. Outer-fold results, selected oversampling factors, selected decision thresholds, and all patient-level held-out predictions were retained.
+
+The final overall estimate for a given RS cutoff was calculated from the **pooled five outer-test prediction blocks**, using the observed class, score, and **already assigned fold-specific predicted class** of each individual. Pooled AUROC was calculated from the continuous out-of-fold scores; classification metrics used the saved fold-specific binary predictions, not a new threshold selected on pooled test scores. Five outer-fold metrics were also retained to show between-fold variation. The stored analysis object for each cutoff contained `outer_metrics`, `pooled_metrics`, `selected_settings`, `tuning_summary`, `oof`, and detailed `tuning` output.
+
+The full RS cutoff sweep was developed and assessed in the same patient cohort. Consequently, selecting or emphasizing the cutoffs with the most favorable observed performance is **exploratory**; conducting nested CV separately for each fixed cutoff does not externally validate the cutoff-selection decision. The currently presented analyses used a single recorded CV seed. Repeated-seed, fixed-fold or external validation is needed to quantify additional uncertainty attributable to partitioning and endpoint exploration.
+
+## Performance measures and cross-cutoff analysis
+
+High RS was regarded as the event of interest. Discrimination was measured with the area under the receiver operating characteristic curve (AUROC). At the fold-specific operating thresholds, pooled out-of-fold counts of true positives (TP), false positives (FP), true negatives (TN), and false negatives (FN) were used to calculate
+
+$$
+\begin{aligned}
+\mathrm{Accuracy}&=(TP+TN)/N,\\
+\mathrm{Sensitivity}&=TP/(TP+FN),\\
+\mathrm{Specificity}&=TN/(TN+FP),\\
+\mathrm{PPV}&=TP/(TP+FP),\\
+\mathrm{NPV}&=TN/(TN+FN),\\
+\mathrm{Balanced\ accuracy}&=(\mathrm{Sensitivity}+\mathrm{Specificity})/2,\\
+F_1&=2\,\mathrm{PPV}\,\mathrm{Sensitivity}/(\mathrm{PPV}+\mathrm{Sensitivity}).
+\end{aligned}
+$$
+
+Performance measures were tabulated and graphed against each integer cutoff from **25 through 40**. Because the number and prevalence of High patients change by definition, sensitivity, precision, NPV, and accuracy were interpreted jointly with class counts. A relatively stable AUROC interval was described as *aggregate discrimination stability* rather than stable identification of the same patients. No confidence intervals were calculated for the single-seed plots currently available. Average precision/PR-AUC was discussed as a possible additional measure but was **not part of the seven-metric Figure 1 implementation shown in the final screenshots**.
+
+## Patient-level consistency across RS cutoffs
+
+To investigate whether aggregate discrimination stability coincided with individual-level consistency, we compared the identities of patients predicted High by adjacent cutoff-specific models. With \(H_c\) denoting the set of patient indices assigned High by the outer out-of-fold predictions for cutoff \(c\), the adjacent-cutoff overlap was summarized by the Jaccard index
+
+\[
+J_c=\frac{|H_{c-1}\cap H_c|}{|H_{c-1}\cup H_c|},\qquad c=26,\ldots,40.
+\]
+
+In addition, we fixed an extreme-score reference subgroup defined by **observed RS >40** and estimated the proportion of these same patients predicted High under each model trained at cutoffs 25–40: $D_c=\frac{\sum_i\mathbb I(\mathrm{RS}_i>40)\mathbb I(\widehat Y_i^{(c)}=\mathrm{High})}{\sum_i\mathbb I(\mathrm{RS}_i>40)}$.
+
+These descriptive measures were computed from patient-aligned outer-test predictions identified by `row_id`. As the cutoff-specific models were separately fitted, changes in patient-level predictions may reflect the RS endpoint definition, the classification operating threshold, random training variation, and potentially differences in stratified fold assignment. Therefore, this analysis assesses **observed agreement across completed modeling pipelines**, not the isolated causal effect of changing the cutoff while holding all other elements fixed.
+
+## Association between genomic-risk classification and chemotherapy receipt
+
+We linked each patient's observed chemotherapy status (`chemo_group`) to the corresponding held-out MLP prediction through the `oof$row_id` index in the unchanged, cleaned analytic data order. The link was checked against the recorded High/Low truth for each cutoff to detect incorrect row alignment. For descriptive comparison, patients were grouped both by **observed** RS-based classification and by **MLP-predicted** classification. Within each group and cutoff, we calculated the number of patients and the observed proportion receiving chemotherapy:
+
+$$
+\widehat P(\mathrm{CT}=\mathrm{Yes}\mid G=g)
+=\frac{\#\{i:G_i=g,\ \mathrm{CT}_i=\mathrm{Yes}\}}{\#\{i:G_i=g\}},
+$$
+
+where G denotes the observed or model-predicted High/Low group. False-negative High cases were defined as patients with observed RS >c but an out-of-fold MLP prediction of Low; their observed chemotherapy receipt and non-receipt were summarized separately. Comparisons were descriptive, including cross-tabulations of actual versus predicted RS groups and chemotherapy Yes/No counts.
+
+**Chemotherapy non-receipt** was the appropriate term for a recorded `No` outcome. It was not equated with safe treatment omission, clinical agreement with a recommended decision, or individual treatment benefit. The models were neither designed nor validated as chemotherapy treatment-effect estimators. In particular, false-negative High cases who did not receive chemotherapy were not presumed to be correctly spared treatment.
+
+## Logistic regression nomograms and internal calibration
+
+As interpretable complementary models, two binary Logistic regressions were specified with the **same seven clinicopathologic predictors**: (1) observed High RS (working primary nomogram definition: RS >30), and (2) observed chemotherapy receipt (`Yes` versus `No`). The corresponding formulas were constructed using `reformulate(x_vars, response=...)`. Initial Logistic models used the binomial `glm()` implementation; nomogram plots were generated by refitting the same predictor formulas with `rms::lrm(..., x=TRUE, y=TRUE)` after defining a training-data `datadist` object. The `rms::nomogram()` probability scale was obtained through the inverse-logit transformation `plogis`.
+
+The recorded nomogram workflow fit the `lrm` models using `sp$train_df` after exclusion of observations without a recorded chemotherapy Yes/No outcome and any incomplete predictor values under its complete-case preparation. A previously displayed `sp` was generated using a **70% training / 15% validation / 15% test** partition stratified by chemotherapy receipt; the final partition source and membership should be checked against the saved code. These Logistic and nomogram analyses are distinct from the five-by-four nested-CV MLP analysis and should not be presented as if they shared the same internal-validation design.
+
+Internal calibration was investigated separately for each `lrm` fit using `rms::calibrate(method = "boot", B = 200)` with a fixed seed. Apparent and bootstrap optimism-corrected calibration estimates were compared against the ideal 45-degree line. The vertical axis represented an estimated **observed event proportion** (High RS or chemotherapy receipt) rather than an individual's known true probability. These curves evaluated internal probability agreement for the fitted Logistic models; they did **not** evaluate the calibration of the MLP scores and did **not** constitute an external-validation analysis. The rare stage 3–4 category exhibited unusually large nomogram point allocation in the chemotherapy model; its sample size, regression coefficients, standard errors and potential separation require inspection before clinical interpretation.
+
+## Other model development and software
+
+A Random Forest (RF) comparator was implemented in the earlier workflow using `caret::train(method = "rf")` with four-fold resampling, ROC-based tuning, candidate `mtry` values, **1,000 trees**, and explicit High/Low class weights. The historical `run_rf()` function used a train/validation/test data structure and selected a validation decision threshold with `find_threshold()`. An RF probability helper and MLP–RF soft-voting ensemble were subsequently **proposed** for nested-CV extension; the available saved outputs do **not** establish that this ensemble was part of the completed 25–40 primary analysis. The present manuscript Methods therefore treats the nested-CV MLP as the analyzed primary classifier and RF/ensemble as separate development work pending confirmation.
+
+An exploratory continuous-score MLP regression was also performed by replacing the binary training label with standardized observed RS and using a linear output layer. Because this model did not improve the selected High/Low classification task under the tested configuration, continuous-RS regression was not retained as the primary analysis. It should only be included in a submitted Methods section if the corresponding negative-result experiment is explicitly reported in the paper or supplementary materials.
+
+Analyses were carried out in R, with packages used in the documented code including `RSNNS`, `caret`, `pROC`, `rms`, `dplyr`/`tidyr`, and the Random Forest implementation. The final R version, package versions, exact random seeds, and final data-preprocessing source revision should be recorded for reproducibility. No external validation cohort was included in the analyses documented here.
+
